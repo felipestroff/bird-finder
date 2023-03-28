@@ -8,23 +8,26 @@
 
     <title>Bird Finder</title>
 
-    <link rel="icon" href="public/favicon.ico" />
-    <link rel="apple-touch-icon" href="public/apple-touch-icon.png" />
-    <link rel="manifest" href="public/manifest.json" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="src/assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="src/assets/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="src/assets/images/favicon-16x16.png">
+
+    <link rel="manifest" href="manifest.json" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
       integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
       crossorigin=""
     />
     <link rel="stylesheet" href="src/assets/style.css">
+  </head>
+  <body>
+    <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
       integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
       crossorigin="">
     </script>
     <script src="src/app.js"></script>
-  </head>
-  <body>
-    <div id="map"></div>
   </body>
 </html>
