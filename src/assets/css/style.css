@@ -1,0 +1,39 @@
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css');
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@latest/font/bootstrap-icons.css');
+@import url('https://unpkg.com/leaflet@1.9.3/dist/leaflet.css');
+@import url('https://unpkg.com/leaflet-draw/dist/leaflet.draw.css');
+
+body {
+    padding: 0;
+    margin: 0;
+}
+
+html, body, #app, #map {
+    height: 100%;
+    width: 100vw;
+}
+
+#loader {
+    width: 3rem;
+    height: 3rem;
+    position: absolute;
+    left: calc(50% - (3rem / 2));
+    top: calc(50% - 3rem);
+    z-index: 1056;
+}
+
+#speciesWidget {
+    width: 25vw;
+    height: auto;
+}
+
+#speciesList {
+    max-height: 70vh;
+}
+
+/* Medium devices (tablets, 768px and down) */
+@media (max-width: 768px) {
+    #speciesWidget {
+        width: 50vw;
+    }
+}
