@@ -214,11 +214,11 @@ function createSpecieItem(item) {
         >
             <img class="img-thumbnail rounded" src="${photoUrl}" style="height: 75px;">
             <h6 class="text-wrap ms-2" style="width: 12rem;">
-                ${item.taxon.preferred_common_name}
+                ${item.taxon.preferred_common_name || item.taxon.english_common_name}
             </h6>
         </a>
     </div>`;
-
+    
     return specieItem;
 }
 
