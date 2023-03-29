@@ -56,6 +56,9 @@ function changeAppLang(event) {
 
 function createMap() {
     map = L.map('map').setView(config.map.latLng, config.map.zoom);
+
+    map.removeControl(map.zoomControl);
+
     map.on('draw:drawstart', onDrawStart);
     map.on('draw:created', onDrawCreated);
     map.on('draw:deleted', onDrawDeleted);
@@ -233,6 +236,9 @@ function createSpeciesList(data) {
         setNoResultsFound();
     }
 
+    const bounds = bbox || speciesLayerGroup.getBounds();
+    map.fitBounds(bounds);
+
     toggleLoader(false);
 }
 
@@ -371,12 +377,13 @@ function showSpecieLocation(target, taxonId) {
         }
     }
 
+    let bounds;
+    
     if (!target.classList.contains('active')) {
         target.classList.add('active');
 
         const latLng = marker.getLatLng();
-        const bounds = L.latLngBounds(latLng, latLng);
-        map.fitBounds(bounds);
+        bounds = L.latLngBounds(latLng, latLng);
 
         setTimeout(() => {
             marker.openPopup();
@@ -389,9 +396,12 @@ function showSpecieLocation(target, taxonId) {
     else {
         target.classList.remove('active');
 
-        map.fitBounds(bbox);
         marker.closePopup();
+
+        bounds = bbox || speciesLayerGroup.getBounds();
     }
+
+    map.fitBounds(bounds);
 }
 
 function goToPreviousPage() {
@@ -449,12 +459,9 @@ function onDrawCreated(event) {
         bbox = latLng.toBounds(radius);
     }
 
-    if (bbox) {
-        drawnLayerGroup.addLayer(layer);
-        map.fitBounds(bbox);
+    drawnLayerGroup.addLayer(layer);
 
-        specieSearch();
-    }
+    specieSearch();
 }
 
 function onDrawDeleted(event) {
