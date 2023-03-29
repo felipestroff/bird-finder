@@ -57,7 +57,10 @@ async function querySpeciesByBbox() {
         swlng: bbox._southWest.lng,
         taxon_id: 3, // 3: Aves
         verifiable: true,
-        page: page
+        quality_grade: 'research',
+        has: ['geo', 'photos'],
+        page: page,
+        locale: 'pt-BR'
     };
 
     const response = await fetch('https://api.inaturalist.org/v1/observations?' + new URLSearchParams(params));
@@ -69,21 +72,17 @@ async function createSpeciesList() {
 
     const data = await querySpeciesByBbox();
 
-    console.log(data);
+    console.log(data)
 
     if (data.results.length) {
         clearSpeciesMarkers();
         clearSpeciesList();
-        
-        results = data.results.filter((obj, index, self) => {
-            return index === self.findIndex((t) => t.community_taxon_id === obj.community_taxon_id)
-        });
 
-        for (const [index, specie] of results.entries()) {
-            const specieItem = createSpecieItem(index, specie);
+        for (const [index, item] of data.results.entries()) {
+            const specieItem = createSpecieItem(item);
             speciesList.innerHTML += specieItem;
 
-            createSpecieMarker(index, specie);
+            createSpecieMarker(index, item);
         }
 
         totalResults = data.total_results;
@@ -100,23 +99,26 @@ async function createSpeciesList() {
         }
     }
     else {
-        alert('Nenhuma espécie encontrada nesta região!');
+        speciesList.innerHTML = `<div class="p-3">
+            <p>Nenhum resultado encontrado.</p>
+            <p>Por favor, tente novamente selecionando outra área de interesse.</p>
+        </div>`;
     }
 
     toggleLoader(false);
 }
 
-function createSpecieMarker(index, specie) {
-    const latLng = specie.geojson.coordinates.reverse();
-    const title = specie.species_guess || specie.description;
+function createSpecieMarker(index, item) {
+    const latLng = item.geojson.coordinates.reverse();
+    const createdAt = new Date(item.created_at).toLocaleDateString();
 
     let images = '';
     let countImages = 0;
-    for (const [photoIndex, photo] of specie.observation_photos.entries()) {
+    for (const [photoIndex, photo] of item.observation_photos.entries()) {
         const photoUrl = photo.photo.url.replace('square', 'large');
 
         images += `<div class="carousel-item ${photoIndex === 0 ? 'active' : ''}">
-            <img src="${photoUrl}" class="d-block w-100">
+            <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
         </div>`;
 
         countImages++;
@@ -124,30 +126,39 @@ function createSpecieMarker(index, specie) {
 
     const marker = L.marker(latLng)
         .addTo(speciesLayerGroup)
-        .bindPopup(`<div class="card" style="width: 18rem;">
-            <div id="carousel_${index}" class="card-img-top carousel slide">
-                <div class="carousel-inner">${images}</div>
-                <button class="carousel-control-prev ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
+        .bindPopup(`<div class="card" style="width: 16rem;">
+            <div class="card-img-top">
+                <div id="carousel_${index}" class="carousel carousel-dark slide">
+                    <div class="carousel-inner">${images}</div>
+                    <button class="carousel-control-prev ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
             </div>
             <div class="card-body">
-                <h5 class="card-title">${title}<h5>
+                <h5 class="card-title">${item.taxon.preferred_common_name}<h5>
                 <h6 class="card-subtitle mb-2 text-body-secondary">
-                    ${specie.description || ''}
+                    ${item.description || ''}
                 </h6>
-                <p class="card-text">${specie.place_guess}</p>
-                <a href="https://www.inaturalist.org/people/${specie.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
-                    <img class="img-thumbnail rounded" src="${specie.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
-                    <span class="text-wrap ms-2" style="width: 10rem;">
-                        Registro feito por ${specie.user.name || specie.user.login}
+                <p class="card-text">${item.place_guess}</p>
+                <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
+                    <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
+                    <span class="text-wrap ms-2" style="width: 12rem;">
+                        Por ${item.user.name || item.user.login}
                     </span>
                 </a>
+                <div class="mt-3">
+                    <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white" role="button">iNaturalist</a>
+                    <a href="https://www.wikiaves.com.br/wiki/${item.taxon.preferred_common_name}" target="_blank" class="btn btn-danger btn-sm text-white" role="button">WikiAves</a>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary">
+                Registrado em ${createdAt}
             </div>
         <div>`);
 }
@@ -156,27 +167,21 @@ function clearSpeciesMarkers() {
     speciesLayerGroup.clearLayers();
 }
 
-function createSpecieItem(index, specie) {
-    const id = `collapse_${index}`;
-    const photoUrl = specie.observation_photos.length ? specie.observation_photos[0].photo.url : './src/assets/images/icon-192x192.png';
+function createSpecieItem(item) {
+    const photoUrl = item.observation_photos.length ? item.observation_photos[0].photo.url : './src/assets/images/icon-192x192.png';
 
-    const item = `<div>
-        <a href="#${id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-            data-bs-toggle="collapse"
+    const specieItem = `<div>
+        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            onclick="showSpecieLocation([${item.geojson.coordinates}])"
         >
             <img class="img-thumbnail rounded" src="${photoUrl}" style="height: 75px;">
             <h6 class="text-wrap ms-2" style="width: 10rem;">
-                ${specie.species_guess || specie.description}
+                ${item.taxon.preferred_common_name}
             </h6>
         </a>
-        <div id="${id}" class="collapse">
-            <div class="card card-body">
-                <a class="card-link" href="#" onclick="showSpecieLocation([${specie.geojson.coordinates}])">Ver no mapa</a>
-            </div>
-        </div>
     </div>`;
 
-    return item;
+    return specieItem;
 }
 
 function createSpeciesPagination() {
