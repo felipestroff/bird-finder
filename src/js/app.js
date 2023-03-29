@@ -372,6 +372,8 @@ function onDrawStart(event) {
 }
 
 function onDrawCreated(event) {
+    page = 1;
+
     drawnLayerGroup.clearLayers();
     
     const layer = event.layer;
