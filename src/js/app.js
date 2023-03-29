@@ -74,12 +74,16 @@ function createControls() {
         toggle: false
     });
 
-    // Desktop
-    speciesWidget.addEventListener('mouseover', onWidgetOver, false);
-    speciesWidget.addEventListener('mouseout', onWidgetOut, false);
     // Mobile
-    speciesWidget.addEventListener('touchstart', onWidgetOver, false);
-    speciesWidget.addEventListener('touchend', onWidgetOut, false);
+    if (isMobile) {
+        speciesWidget.addEventListener('touchstart', onWidgetOver, false);
+        speciesWidget.addEventListener('touchend', onWidgetOut, false);
+    }
+    // Desktop
+    else {
+        speciesWidget.addEventListener('mouseover', onWidgetOver, false);
+        speciesWidget.addEventListener('mouseout', onWidgetOut, false);
+    }
 }
 
 async function querySpeciesByBbox() {
@@ -335,11 +339,13 @@ function onDrawCreated(event) {
 }
 
 function onWidgetOver() {
+    map.dragging.disable();
     map.doubleClickZoom.disable();
     map.scrollWheelZoom.disable();
 }
 
 function onWidgetOut() {
+    map.dragging.enable();
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
 }
