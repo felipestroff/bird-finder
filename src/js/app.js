@@ -124,8 +124,8 @@ function createControls() {
     });
 
     speciesList.innerHTML = `<div class="p-3">
-        <p>${translate('Select an area to begin your search for bird species')}.</p>
-        <p>${translate('To do so, use the drawing tools located on the left side')}.</p>
+        <h6>${translate('Select an area to begin your search for bird species')}.</h6>
+        <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
     </div>`;
 
     // Mobile
@@ -187,8 +187,8 @@ async function createSpeciesList() {
     }
     else {
         speciesList.innerHTML = `<div class="p-3">
-            <p>${translate('No results found')}.</p>
-            <p>${translate('Please try again by selecting another area of ​​interest')}.</p>
+            <h6>${translate('No results found')}.</h6>
+            <h6>${translate('Please try again by selecting another area of ​​interest')}.</h6>
         </div>`;
         speciesPagination.innerHTML = '';
     }
