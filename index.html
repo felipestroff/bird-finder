@@ -21,18 +21,17 @@
     <div id="app" class="position-absolute">
       <div id="map"></div>
 
-      <div id="speciesWidget" class="bg-white">
-        <button class="btn btn-light btn-sm d-block mx-auto" type="button" title="Lista de Espécies" data-bs-toggle="collapse" data-bs-target="#speciesWidgetContent" aria-expanded="false" aria-controls="speciesWidgetContent">
+      <div id="langControl" class="bg-white">
+        <button id="langControlBtn" class="btn btn-light btn-sm" type="button"></button>
+      </div>
+
+      <div id="speciesControl" class="bg-white">
+        <button class="btn btn-light btn-sm d-block mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#speciesControlContent" aria-expanded="false" aria-controls="speciesControlContent">
           <img src="src/assets/images/icon-192x192.png" style="height: 2.5rem;">
         </button>
 
-        <div id="speciesWidgetContent" class="collapse collapse-horizontal show">
-          <div id="speciesList" class="list-group overflow-auto">
-            <div class="p-3">
-              <p>Selecione uma área para começar sua busca de espécies de aves.</p>
-              <p>Para isso, utilize as ferramentas de desenho localizadas ao lado esquerdo.</p>
-            </div>
-          </div>
+        <div id="speciesControlContent" class="collapse collapse-horizontal show">
+          <div id="speciesList" class="list-group overflow-auto"></div>
 
           <nav class="d-flex justify-content-center align-items-center mt-3">
             <ul id="speciesPagination" class="pagination"></ul>

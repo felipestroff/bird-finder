@@ -2,10 +2,12 @@
 const isMobile = L.Browser.mobile;
 
 let config;
+let lang;
+let langConfig;
 let map;
 let drawnLayerGroup;
 let speciesLayerGroup;
-let speciesWidgetCollapse;
+let speciesControlCollapse;
 let bbox;
 let totalPages = 1;
 let page = 1;
@@ -15,12 +17,40 @@ let totalResults = 0;
 async function init() {
     config = await fetchConfig();
 
+    const urlParams = new URLSearchParams(window.location.search);
+
+    lang = urlParams.get('lang') || config.app.defaultLang;
+    langConfig = await fetchLangConfig(lang);
+
+    document.documentElement.lang = lang;
+
     createMap();
 }
 
 async function fetchConfig() {
-    const response = await fetch(`./config.json`);
+    const response = await fetch('./config.json');
     return response.json();
+}
+
+async function fetchLangConfig(lang) {
+    const response = await fetch(`./src/nls/${lang}.json`);
+    return response.json();
+}
+
+function translate(string) {
+    return langConfig[string] || string;
+}
+
+function changeAppLang(event) {
+    const newLang = lang === 'pt-BR' ? 'en-US' : 'pt-BR';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.delete('lang');
+    urlParams.append('lang', newLang);
+  
+    const newUrl = `${window.location.origin}${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
+    
+    window.location.replace(newUrl);
 }
 
 function createMap() {
@@ -37,6 +67,25 @@ function createMap() {
 }
 
 function createControls() {
+    // Lang
+    L.Control.lang = L.Control.extend({
+        position: 'bottomleft',
+        onAdd: function() {
+            return langControl;
+        }
+    });
+    L.control.lang = function(opts) {
+        return new L.Control.lang(opts);
+    }
+    L.control.lang({
+        position: 'bottomleft'
+    })
+    .addTo(map);
+
+    const langIcon = `<img src="./src/assets/images/${lang}.png" style="height: 30px;">`;
+    langControlBtn.innerHTML = langIcon;
+    langControlBtn.addEventListener('click', changeAppLang, false);
+
     // Draw
     drawnLayerGroup = L.featureGroup().addTo(map);
     const drawControl = new L.Control.Draw({
@@ -56,33 +105,38 @@ function createControls() {
     // Species
     speciesLayerGroup = L.featureGroup().addTo(map);
 
-    L.Control.speciesWidget = L.Control.extend({
+    L.Control.species = L.Control.extend({
         position: 'topright',
         onAdd: function() {
-            return speciesWidget;
+            return speciesControl;
         }
     });
-    L.control.speciesWidget = function(opts) {
-        return new L.Control.speciesWidget(opts);
+    L.control.species = function(opts) {
+        return new L.Control.species(opts);
     }
-    L.control.speciesWidget({
+    L.control.species({
         position: 'topright'
     })
     .addTo(map);
 
-    speciesWidgetCollapse = new bootstrap.Collapse('#speciesWidgetContent', {
+    speciesControlCollapse = new bootstrap.Collapse('#speciesControlContent', {
         toggle: false
     });
 
+    speciesList.innerHTML = `<div class="p-3">
+        <p>${translate('Select an area to begin your search for bird species')}.</p>
+        <p>${translate('To do so, use the drawing tools located on the left side')}.</p>
+    </div>`;
+
     // Mobile
     if (isMobile) {
-        speciesWidget.addEventListener('touchstart', onWidgetOver, false);
-        speciesWidget.addEventListener('touchend', onWidgetOut, false);
+        speciesControl.addEventListener('touchstart', onWidgetOver, false);
+        speciesControl.addEventListener('touchend', onWidgetOut, false);
     }
     // Desktop
     else {
-        speciesWidget.addEventListener('mouseover', onWidgetOver, false);
-        speciesWidget.addEventListener('mouseout', onWidgetOut, false);
+        speciesControl.addEventListener('mouseover', onWidgetOver, false);
+        speciesControl.addEventListener('mouseout', onWidgetOut, false);
     }
 }
 
@@ -93,14 +147,14 @@ async function querySpeciesByBbox() {
     params.swlat = bbox._southWest.lat;
     params.swlng = bbox._southWest.lng;
     params.page = page;
-    params.locale = config.app.defaultLang;
+    params.locale = lang;
 
     const response = await fetch(`${config.iNaturalist.apiUrl}/observations?` + new URLSearchParams(params));
     return response.json();
 }
 
 async function createSpeciesList() {
-    speciesWidgetCollapse.show();
+    speciesControlCollapse.show();
 
     toggleLoader(true);
 
@@ -133,8 +187,8 @@ async function createSpeciesList() {
     }
     else {
         speciesList.innerHTML = `<div class="p-3">
-            <p>Nenhum resultado encontrado.</p>
-            <p>Por favor, tente novamente selecionando outra área de interesse.</p>
+            <p>${translate('No results found')}.</p>
+            <p>${translate('Please try again by selecting another area of ​​interest')}.</p>
         </div>`;
         speciesPagination.innerHTML = '';
     }
@@ -144,7 +198,7 @@ async function createSpeciesList() {
 
 function createSpecieMarker(index, item) {
     const latLng = item.geojson.coordinates.reverse();
-    const createdAt = new Date(item.created_at).toLocaleDateString();
+    const createdAt = new Date(item.created_at).toLocaleDateString(lang);
 
     let images = '';
     let countImages = 0;
@@ -167,11 +221,9 @@ function createSpecieMarker(index, item) {
                     <div class="carousel-inner">${images}</div>
                     <button class="carousel-control-prev ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
                     </button>
                     <button class="carousel-control-next ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
                     </button>
                 </div>
             </div>
@@ -184,16 +236,17 @@ function createSpecieMarker(index, item) {
                 <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
                     <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
                     <span class="text-wrap ms-2" style="width: 12rem;">
-                        Por ${item.user.name || item.user.login}
+                        ${translate('Registered by')} ${item.user.name || item.user.login}
                     </span>
                 </a>
                 <div class="mt-3">
                     <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white" role="button">iNaturalist</a>
-                    <a href="https://www.wikiaves.com.br/wiki/${item.taxon.preferred_common_name}" target="_blank" class="btn btn-danger btn-sm text-white" role="button">WikiAves</a>
+                    <a href="https://www.wikiaves.com.br/wiki/${item.taxon.preferred_common_name}" target="_blank" class="btn btn-danger btn-sm text-white ${lang !== 'pt-BR' ? 'd-none' : ''}" role="button">WikiAves</a>
+                    <a href="${item.taxon.wikipedia_url}" target="_blank" class="btn btn-light btn-sm text-dark ${lang !== 'en-US' ? 'd-none' : ''}" role="button">Wikipedia</a>
                 </div>
             </div>
             <div class="card-footer text-body-secondary">
-                Registrado em ${createdAt}
+                ${translate('Registered in')} ${createdAt}
             </div>
         <div>`, {
             closeOnClick: false
@@ -266,7 +319,7 @@ function showSpecieLocation(target, taxonId) {
         }, 500);
 
         if (isMobile) {
-            speciesWidgetCollapse.hide();
+            speciesControlCollapse.hide();
         }
     }
     else {
@@ -314,7 +367,8 @@ function toggleLoader(bool) {
 // Map
 function onDrawStart(event) {
     map.closePopup();
-    speciesWidgetCollapse.hide();
+
+    speciesControlCollapse.hide();
 }
 
 function onDrawCreated(event) {
