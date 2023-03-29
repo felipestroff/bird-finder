@@ -103,10 +103,10 @@ async function createSpeciesList() {
     const data = await querySpeciesByBbox();
     console.log(data)
 
-    if (data.results.length) {
-        clearSpeciesMarkers();
-        clearSpeciesList();
+    clearSpeciesMarkers();
+    clearSpeciesList();
 
+    if (data.results.length) {
         for (const [index, item] of data.results.entries()) {
             const specieItem = createSpecieItem(item);
             speciesList.innerHTML += specieItem;
@@ -209,7 +209,7 @@ function createSpecieItem(item) {
             onclick="showSpecieLocation(this, ${item.taxon.id})"
         >
             <img class="img-thumbnail rounded" src="${photoUrl}" style="height: 75px;">
-            <h6 class="text-wrap ms-2" style="width: 10rem;">
+            <h6 class="text-wrap ms-2" style="width: 12rem;">
                 ${item.taxon.preferred_common_name}
             </h6>
         </a>

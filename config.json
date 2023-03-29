@@ -3,8 +3,8 @@
         "defaultLang": "pt-BR"
     },
     "map": {
-        "latLng": [-29.9436224, -51.2138659],
-        "zoom": 10
+        "latLng": [-13.7028062, -69.6972495],
+        "zoom": 4
     },
     "iNaturalist": {
         "apiUrl": "https://api.inaturalist.org/v1",
