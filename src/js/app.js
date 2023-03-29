@@ -1,9 +1,10 @@
 // Global variables
+const isMobile = L.Browser.mobile;
+
 let bbox;
 let totalPages = 1;
 let page = 1;
 let totalResults = 0;
-let results = [];
 
 const map = L.map('map').setView([-29.9436224, -51.2138659], 10);
 
@@ -26,8 +27,8 @@ const drawControl = new L.Control.Draw({
     }
 });
 map.addControl(drawControl);
-
-map.on(L.Draw.Event.CREATED, onDrawCreated);
+map.on('draw:drawstart', onDrawStart);
+map.on('draw:created', onDrawCreated);
 
 const speciesLayerGroup = L.featureGroup().addTo(map);
 
@@ -44,9 +45,6 @@ L.control.speciesWidget({
     position: 'topright'
 })
 .addTo(map);
-
-speciesWidget.addEventListener('mouseover', onWidgetMouseOver, false);
-speciesWidget.addEventListener('mouseout', onWidgetMouseOut, false);
 
 // Methods
 async function querySpeciesByBbox() {
@@ -68,10 +66,11 @@ async function querySpeciesByBbox() {
 }
 
 async function createSpeciesList() {
+    speciesWidgetCollapse.show();
+
     toggleLoader(true);
 
     const data = await querySpeciesByBbox();
-
     console.log(data)
 
     if (data.results.length) {
@@ -103,6 +102,7 @@ async function createSpeciesList() {
             <p>Nenhum resultado encontrado.</p>
             <p>Por favor, tente novamente selecionando outra área de interesse.</p>
         </div>`;
+        speciesPagination.innerHTML = '';
     }
 
     toggleLoader(false);
@@ -124,8 +124,9 @@ function createSpecieMarker(index, item) {
         countImages++;
     }
 
-    const marker = L.marker(latLng)
-        .addTo(speciesLayerGroup)
+    const marker = L.marker(latLng, {
+            taxon_id: item.taxon.id
+        })
         .bindPopup(`<div class="card" style="width: 16rem;">
             <div class="card-img-top">
                 <div id="carousel_${index}" class="carousel carousel-dark slide">
@@ -160,7 +161,10 @@ function createSpecieMarker(index, item) {
             <div class="card-footer text-body-secondary">
                 Registrado em ${createdAt}
             </div>
-        <div>`);
+        <div>`, {
+            closeOnClick: false
+        })
+        .addTo(speciesLayerGroup);
 }
 
 function clearSpeciesMarkers() {
@@ -172,7 +176,7 @@ function createSpecieItem(item) {
 
     const specieItem = `<div>
         <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-            onclick="showSpecieLocation([${item.geojson.coordinates}])"
+            onclick="showSpecieLocation(this, ${item.taxon.id})"
         >
             <img class="img-thumbnail rounded" src="${photoUrl}" style="height: 75px;">
             <h6 class="text-wrap ms-2" style="width: 10rem;">
@@ -204,11 +208,39 @@ function clearSpeciesList() {
     speciesList.innerHTML = ''; 
 }
 
-function showSpecieLocation(coordinates) {
-    const latLng = coordinates.reverse();
-    const bounds = L.latLngBounds(latLng, latLng);
+function showSpecieLocation(target, taxonId) {
+    const marker = speciesLayerGroup.getLayers().find(layer => {
+        return layer.options.taxon_id === taxonId;
+    });
 
-    map.fitBounds(bounds);
+    const items = speciesList.getElementsByClassName('list-group-item');
+    for (const item of items) {
+        if (item !== target) {
+            item.classList.remove('active');
+        }
+    }
+
+    if (!target.classList.contains('active')) {
+        target.classList.add('active');
+
+        const latLng = marker.getLatLng();
+        const bounds = L.latLngBounds(latLng, latLng);
+        map.fitBounds(bounds);
+
+        setTimeout(() => {
+            marker.openPopup();
+        }, 500);
+
+        if (isMobile) {
+            speciesWidgetCollapse.hide();
+        }
+    }
+    else {
+        target.classList.remove('active');
+
+        map.fitBounds(bbox);
+        marker.closePopup();
+    }
 }
 
 function goToPreviousPage() {
@@ -245,6 +277,22 @@ function toggleLoader(bool) {
 }
 
 // Events
+// Desktop
+speciesWidget.addEventListener('mouseover', onWidgetOver, false);
+speciesWidget.addEventListener('mouseout', onWidgetOut, false);
+// Mobile
+speciesWidget.addEventListener('touchstart', onWidgetOver, false);
+speciesWidget.addEventListener('touchend', onWidgetOut, false);
+
+const speciesWidgetCollapse = new bootstrap.Collapse('#speciesWidgetContent', {
+    toggle: false
+});
+
+function onDrawStart(event) {
+    map.closePopup();
+    speciesWidgetCollapse.hide();
+}
+
 function onDrawCreated(event) {
     drawnLayerGroup.clearLayers();
     
@@ -266,12 +314,12 @@ function onDrawCreated(event) {
     createSpeciesList();
 }
 
-function onWidgetMouseOver() {
+function onWidgetOver() {
     map.doubleClickZoom.disable();
     map.scrollWheelZoom.disable();
 }
 
-function onWidgetMouseOut() {
+function onWidgetOut() {
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
 }

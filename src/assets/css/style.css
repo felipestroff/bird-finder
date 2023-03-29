@@ -22,7 +22,8 @@ html, body, #app, #map {
     z-index: 1056;
 }
 
-#speciesWidget {
+
+#speciesWidgetContent {
     width: 25vw;
     height: auto;
 }
@@ -33,7 +34,7 @@ html, body, #app, #map {
 
 /* Medium devices (tablets, 768px and down) */
 @media (max-width: 768px) {
-    #speciesWidget {
+    #speciesWidgetContent {
         width: 75vw;
     }
 }

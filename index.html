@@ -22,20 +22,26 @@
       <div id="map"></div>
 
       <div id="speciesWidget" class="bg-white">
-        <div id="speciesList" class="list-group overflow-auto">
-          <div class="p-3">
-            <p>Selecione uma área para começar sua busca de espécies de aves.</p>
-            <p>Para isso, utilize as ferramentas de desenho localizadas ao lado esquerdo.</p>
+        <button class="btn btn-light btn-sm d-block mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#speciesWidgetContent" aria-expanded="false" aria-controls="speciesWidgetContent">
+          <img src="src/assets/images/icon-192x192.png" style="height: 2.5rem;">
+        </button>
+
+        <div id="speciesWidgetContent" class="collapse collapse-horizontal show">
+          <div id="speciesList" class="list-group overflow-auto">
+            <div class="p-3">
+              <p>Selecione uma área para começar sua busca de espécies de aves.</p>
+              <p>Para isso, utilize as ferramentas de desenho localizadas ao lado esquerdo.</p>
+            </div>
           </div>
-        </div>
 
-        <nav class="d-flex justify-content-center align-items-center mt-3">
-          <ul id="speciesPagination" class="pagination"></ul>
-        </nav>
+          <nav class="d-flex justify-content-center align-items-center mt-3">
+            <ul id="speciesPagination" class="pagination"></ul>
+          </nav>
 
-        <div id="loader" class="d-flex justify-content-center d-none">
-          <div class="spinner-grow w-100 bg-transparent text-center" role="status">
-            <img src="src/assets/images/binoculars.png">
+          <div id="loader" class="d-flex justify-content-center d-none">
+            <div class="spinner-grow w-100 bg-transparent text-center" role="status">
+              <img src="src/assets/images/binoculars.png">
+            </div>
           </div>
         </div>
       </div>
