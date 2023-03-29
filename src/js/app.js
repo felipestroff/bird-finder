@@ -1,67 +1,97 @@
 // Global variables
 const isMobile = L.Browser.mobile;
 
+let config;
+let map;
+let drawnLayerGroup;
+let speciesLayerGroup;
+let speciesWidgetCollapse;
 let bbox;
 let totalPages = 1;
 let page = 1;
 let totalResults = 0;
 
-const map = L.map('map').setView([-29.9436224, -51.2138659], 10);
-
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-})
-.addTo(map);
-
-const drawnLayerGroup = L.featureGroup().addTo(map);
-const drawControl = new L.Control.Draw({
-    edit: {
-        featureGroup: drawnLayerGroup,
-        edit: false,
-        remove: false
-    },
-    draw: {
-        circlemarker: false,
-        marker: false,
-        polyline: false
-    }
-});
-map.addControl(drawControl);
-map.on('draw:drawstart', onDrawStart);
-map.on('draw:created', onDrawCreated);
-
-const speciesLayerGroup = L.featureGroup().addTo(map);
-
-L.Control.speciesWidget = L.Control.extend({
-    position: 'topright',
-    onAdd: function() {
-        return speciesWidget;
-    }
-});
-L.control.speciesWidget = function(opts) {
-    return new L.Control.speciesWidget(opts);
-}
-L.control.speciesWidget({
-    position: 'topright'
-})
-.addTo(map);
-
 // Methods
-async function querySpeciesByBbox() {
-    const params = {
-        nelat: bbox._northEast.lat,
-        nelng: bbox._northEast.lng,
-        swlat: bbox._southWest.lat,
-        swlng: bbox._southWest.lng,
-        taxon_id: 3, // 3: Aves
-        verifiable: true,
-        quality_grade: 'research',
-        has: ['geo', 'photos'],
-        page: page,
-        locale: 'pt-BR'
-    };
+async function init() {
+    config = await fetchConfig();
 
-    const response = await fetch('https://api.inaturalist.org/v1/observations?' + new URLSearchParams(params));
+    createMap();
+}
+
+async function fetchConfig() {
+    const response = await fetch(`./config.json`);
+    return response.json();
+}
+
+function createMap() {
+    map = L.map('map').setView(config.map.latLng, config.map.zoom);
+    map.on('draw:drawstart', onDrawStart);
+    map.on('draw:created', onDrawCreated);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    })
+    .addTo(map);
+
+    createControls();
+}
+
+function createControls() {
+    // Draw
+    drawnLayerGroup = L.featureGroup().addTo(map);
+    const drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnLayerGroup,
+            edit: false,
+            remove: false
+        },
+        draw: {
+            circlemarker: false,
+            marker: false,
+            polyline: false
+        }
+    });
+    map.addControl(drawControl);
+
+    // Species
+    speciesLayerGroup = L.featureGroup().addTo(map);
+
+    L.Control.speciesWidget = L.Control.extend({
+        position: 'topright',
+        onAdd: function() {
+            return speciesWidget;
+        }
+    });
+    L.control.speciesWidget = function(opts) {
+        return new L.Control.speciesWidget(opts);
+    }
+    L.control.speciesWidget({
+        position: 'topright'
+    })
+    .addTo(map);
+
+    speciesWidgetCollapse = new bootstrap.Collapse('#speciesWidgetContent', {
+        toggle: false
+    });
+
+    // Desktop
+    speciesWidget.addEventListener('mouseover', onWidgetOver, false);
+    speciesWidget.addEventListener('mouseout', onWidgetOut, false);
+    // Mobile
+    speciesWidget.addEventListener('touchstart', onWidgetOver, false);
+    speciesWidget.addEventListener('touchend', onWidgetOut, false);
+}
+
+async function querySpeciesByBbox() {
+    const params = config.iNaturalist.params;
+    params.nelat = bbox._northEast.lat;
+    params.nelng = bbox._northEast.lng;
+    params.swlat = bbox._southWest.lat;
+    params.swlng = bbox._southWest.lng;
+    params.page = page;
+    params.locale = config.app.defaultLang;
+
+    const response = await fetch(`${config.iNaturalist.apiUrl}/observations?` + new URLSearchParams(params));
     return response.json();
 }
 
@@ -86,14 +116,14 @@ async function createSpeciesList() {
 
         totalResults = data.total_results;
 
-        totalPages = totalResults / 30;
+        totalPages = totalResults / config.iNaturalist.params.per_page;
         if (totalPages % 1 !== 0) {
             totalPages = parseInt(totalPages) + 1;
         }
 
         page = data.page;
 
-        if (totalResults > 30) {
+        if (totalResults > config.iNaturalist.params.per_page) {
             speciesPagination.innerHTML = createSpeciesPagination();
         }
     }
@@ -277,17 +307,7 @@ function toggleLoader(bool) {
 }
 
 // Events
-// Desktop
-speciesWidget.addEventListener('mouseover', onWidgetOver, false);
-speciesWidget.addEventListener('mouseout', onWidgetOut, false);
-// Mobile
-speciesWidget.addEventListener('touchstart', onWidgetOver, false);
-speciesWidget.addEventListener('touchend', onWidgetOut, false);
-
-const speciesWidgetCollapse = new bootstrap.Collapse('#speciesWidgetContent', {
-    toggle: false
-});
-
+// Map
 function onDrawStart(event) {
     map.closePopup();
     speciesWidgetCollapse.hide();
@@ -323,3 +343,5 @@ function onWidgetOut() {
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
 }
+
+init();

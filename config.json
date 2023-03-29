@@ -1,0 +1,19 @@
+{
+    "app": {
+        "defaultLang": "pt-BR"
+    },
+    "map": {
+        "latLng": [-29.9436224, -51.2138659],
+        "zoom": 10
+    },
+    "iNaturalist": {
+        "apiUrl": "https://api.inaturalist.org/v1",
+        "params": {
+            "taxon_id": 3,
+            "verifiable": true,
+            "quality_grade": "research",
+            "has": ["geo", "photos"],
+            "per_page": 30
+        }
+    }
+}
