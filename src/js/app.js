@@ -8,6 +8,7 @@ let map;
 let drawnLayerGroup;
 let speciesLayerGroup;
 let speciesControlCollapse;
+let searchType;
 let bbox;
 let totalPages = 1;
 let page = 1;
@@ -124,9 +125,13 @@ function createControls() {
     });
 
     speciesList.innerHTML = `<div class="p-3">
-        <h6>${translate('Select an area to begin your search for bird species')}.</h6>
+        <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
         <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
     </div>`;
+
+    specieSearchInput.setAttribute('placeholder', translate('Type here'));
+    specieSearchInput.addEventListener('change', onSpecieSearchInputChange, false);
+    specieSearchBtn.addEventListener('click', specieSearch, false);
 
     // Mobile
     if (isMobile) {
@@ -140,27 +145,37 @@ function createControls() {
     }
 }
 
-async function querySpeciesByBbox() {
+async function specieSearch() {
+    const term = specieSearchInput.value;
+    if (term || bbox) {
+        speciesControlCollapse.show();
+
+        toggleLoader(true);
+
+        const data = await querySpecies(term, bbox);
+        if (data) {
+            createSpeciesList(data);
+        }
+    }
+}
+
+async function querySpecies(term, bbox) {
     const params = config.iNaturalist.params;
-    params.nelat = bbox._northEast.lat;
-    params.nelng = bbox._northEast.lng;
-    params.swlat = bbox._southWest.lat;
-    params.swlng = bbox._southWest.lng;
+    params.q = term;
     params.page = page;
     params.locale = lang;
+    if (bbox) {
+        params.nelat = bbox._northEast.lat;
+        params.nelng = bbox._northEast.lng;
+        params.swlat = bbox._southWest.lat;
+        params.swlng = bbox._southWest.lng;
+    }
 
     const response = await fetch(`${config.iNaturalist.apiUrl}/observations?` + new URLSearchParams(params));
     return response.json();
 }
 
-async function createSpeciesList() {
-    speciesControlCollapse.show();
-
-    toggleLoader(true);
-
-    const data = await querySpeciesByBbox();
-    console.log(data)
-
+function createSpeciesList(data) {
     clearSpeciesMarkers();
     clearSpeciesList();
 
@@ -332,25 +347,22 @@ function showSpecieLocation(target, taxonId) {
 
 function goToPreviousPage() {
     page = parseInt(page) - 1;
-
-    if (page >= 1 && page <= totalPages) {
-        createSpeciesList();
-    }
+    paginate(page);
 }
 
 function goToPageNumber(target) {
     page = parseInt(target.value);
-
-    if (page >= 1 && page <= totalPages) {
-        createSpeciesList();
-    }
+    paginate(page);
 }
 
 function goToNextPage() {
     page = parseInt(page) + 1;
+    paginate(page);
+}
 
+function paginate() {
     if (page >= 1 && page <= totalPages) {
-        createSpeciesList();
+        specieSearch();
     }
 }
 
@@ -388,10 +400,12 @@ function onDrawCreated(event) {
         bbox = latLng.toBounds(radius);
     }
 
-    drawnLayerGroup.addLayer(layer);
-    map.fitBounds(bbox);
+    if (bbox) {
+        drawnLayerGroup.addLayer(layer);
+        map.fitBounds(bbox);
 
-    createSpeciesList();
+        specieSearch();
+    }
 }
 
 function onWidgetOver() {
@@ -404,6 +418,10 @@ function onWidgetOut() {
     map.dragging.enable();
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
+}
+
+function onSpecieSearchInputChange() {
+    page = 1;
 }
 
 init();
