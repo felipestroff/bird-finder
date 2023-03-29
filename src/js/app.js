@@ -58,52 +58,52 @@ function createMap() {
     map = L.map('map').setView(config.map.latLng, config.map.zoom);
     map.on('draw:drawstart', onDrawStart);
     map.on('draw:created', onDrawCreated);
+    map.on('draw:deleted', onDrawDeleted);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     })
     .addTo(map);
 
-    createControls();
+    createDrawControl();
+    createSpeciesControl();
+    createLangControl();
 }
 
-function createControls() {
-    // Lang
-    L.Control.lang = L.Control.extend({
-        position: 'bottomleft',
-        onAdd: function() {
-            return langControl;
-        }
-    });
-    L.control.lang = function(opts) {
-        return new L.Control.lang(opts);
-    }
-    L.control.lang({
-        position: 'bottomleft'
-    })
-    .addTo(map);
+function createDrawControl() {
+    L.drawLocal.draw.handlers.circle.radius = translate('Radius');
+    L.drawLocal.draw.handlers.circle.tooltip.start = translate('Click and drag to draw circle');
+    L.drawLocal.draw.handlers.polygon.tooltip.cont = translate('Click to continue drawing shape');
+    L.drawLocal.draw.handlers.polygon.tooltip.end = translate('Click first point to close this shape');
+    L.drawLocal.draw.handlers.polygon.tooltip.start = translate('Click to start drawing shape');
+    L.drawLocal.draw.handlers.rectangle.tooltip.start = translate('Click and drag to draw rectangle');
+    L.drawLocal.draw.handlers.simpleshape.tooltip.end = translate('Release to finish drawing');
+    L.drawLocal.draw.toolbar.actions.text = translate('Cancel');
+    L.drawLocal.draw.toolbar.actions.title = translate('Cancel drawing');
+    L.drawLocal.draw.toolbar.buttons.polygon = translate('Draw a polygon');
+    L.drawLocal.draw.toolbar.buttons.rectangle = translate('Draw a rectangle');
+    L.drawLocal.draw.toolbar.buttons.circle = translate('Draw a circle');
+    L.drawLocal.draw.toolbar.finish.text = translate('Finish');
+    L.drawLocal.draw.toolbar.finish.title = translate('Finish drawing');
+    L.drawLocal.draw.toolbar.undo.text = translate('Delete last point');
+    L.drawLocal.draw.toolbar.undo.title = translate('Delete last point drawn');
 
-    const langIcon = `<img src="./src/assets/images/${lang}.png" style="height: 30px;">`;
-    langControlBtn.innerHTML = langIcon;
-    langControlBtn.addEventListener('click', changeAppLang, false);
-
-    // Draw
     drawnLayerGroup = L.featureGroup().addTo(map);
-    const drawControl = new L.Control.Draw({
+    new L.Control.Draw({
         edit: {
             featureGroup: drawnLayerGroup,
-            edit: false,
-            remove: false
+            edit: false
         },
         draw: {
             circlemarker: false,
             marker: false,
             polyline: false
         }
-    });
-    map.addControl(drawControl);
+    })
+    .addTo(map);
+}
 
-    // Species
+function createSpeciesControl() {
     speciesLayerGroup = L.featureGroup().addTo(map);
 
     L.Control.species = L.Control.extend({
@@ -124,25 +124,42 @@ function createControls() {
         toggle: false
     });
 
-    speciesList.innerHTML = `<div class="p-3">
-        <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
-        <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
-    </div>`;
-
     specieSearchInput.setAttribute('placeholder', translate('Type here'));
     specieSearchInput.addEventListener('change', onSpecieSearchInputChange, false);
     specieSearchBtn.addEventListener('click', specieSearch, false);
 
     // Mobile
     if (isMobile) {
-        speciesControl.addEventListener('touchstart', onWidgetOver, false);
-        speciesControl.addEventListener('touchend', onWidgetOut, false);
+        speciesControl.addEventListener('touchstart', onControlOver, false);
+        speciesControl.addEventListener('touchend', onControlOut, false);
     }
     // Desktop
     else {
-        speciesControl.addEventListener('mouseover', onWidgetOver, false);
-        speciesControl.addEventListener('mouseout', onWidgetOut, false);
+        speciesControl.addEventListener('mouseover', onControlOver, false);
+        speciesControl.addEventListener('mouseout', onControlOut, false);
     }
+
+    setDefaultContent();
+}
+
+function createLangControl() {
+    L.Control.lang = L.Control.extend({
+        position: 'bottomleft',
+        onAdd: function() {
+            return langControl;
+        }
+    });
+    L.control.lang = function(opts) {
+        return new L.Control.lang(opts);
+    }
+    L.control.lang({
+        position: 'bottomleft'
+    })
+    .addTo(map);
+
+    const langIcon = `<img src="./src/assets/images/${lang}.png" style="height: 30px;">`;
+    langControlBtn.innerHTML = langIcon;
+    langControlBtn.addEventListener('click', changeAppLang, false);
 }
 
 async function specieSearch() {
@@ -161,14 +178,27 @@ async function specieSearch() {
 
 async function querySpecies(term, bbox) {
     const params = config.iNaturalist.params;
-    params.q = term;
     params.page = page;
     params.locale = lang;
+
+    if (term) {
+        params.q = term;
+    }
+    else {
+        delete params.q;
+    }
+
     if (bbox) {
         params.nelat = bbox._northEast.lat;
         params.nelng = bbox._northEast.lng;
         params.swlat = bbox._southWest.lat;
         params.swlng = bbox._southWest.lng;
+    }
+    else {
+        delete params.nelat;
+        delete params.nelng;
+        delete params.swlat;
+        delete params.swlng;
     }
 
     const response = await fetch(`${config.iNaturalist.apiUrl}/observations?` + new URLSearchParams(params));
@@ -176,8 +206,7 @@ async function querySpecies(term, bbox) {
 }
 
 function createSpeciesList(data) {
-    clearSpeciesMarkers();
-    clearSpeciesList();
+    clearAll();
 
     if (data.results.length) {
         for (const [index, item] of data.results.entries()) {
@@ -197,15 +226,11 @@ function createSpeciesList(data) {
         page = data.page;
 
         if (totalResults > config.iNaturalist.params.per_page) {
-            speciesPagination.innerHTML = createSpeciesPagination();
+            createSpeciesPagination();
         }
     }
     else {
-        speciesList.innerHTML = `<div class="p-3">
-            <h6>${translate('No results found')}.</h6>
-            <h6>${translate('Please try again by selecting another area of ​​interest')}.</h6>
-        </div>`;
-        speciesPagination.innerHTML = '';
+        setNoResultsFound();
     }
 
     toggleLoader(false);
@@ -291,7 +316,7 @@ function createSpecieItem(item) {
 }
 
 function createSpeciesPagination() {
-    const pagination = `
+    speciesPagination.innerHTML = `
         <li class="page-item ${page === 1 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="goToPreviousPage()">&laquo;</a>
         </li>
@@ -302,12 +327,36 @@ function createSpeciesPagination() {
         <a class="page-link" href="#" onclick="goToNextPage()">&raquo;</a>
         </li>
     `;
+}
 
-    return pagination;
+function setDefaultContent() {
+    speciesList.innerHTML = `<div class="p-3">
+        <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
+        <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
+    </div>`;
+}
+
+function setNoResultsFound() {
+    speciesList.innerHTML = `<div class="p-3">
+        <h6>${translate('No results found')}.</h6>
+        <h6>${translate('Please try again with other filters')}.</h6>
+    </div>`;
+
+    clearSpeciesPagination();
 }
 
 function clearSpeciesList() {
-    speciesList.innerHTML = ''; 
+    speciesList.innerHTML = '';
+}
+
+function clearSpeciesPagination() {
+    speciesPagination.innerHTML = '';
+}
+
+function clearAll() {
+    clearSpeciesMarkers();
+    clearSpeciesList();
+    clearSpeciesPagination();
 }
 
 function showSpecieLocation(target, taxonId) {
@@ -408,13 +457,21 @@ function onDrawCreated(event) {
     }
 }
 
-function onWidgetOver() {
+function onDrawDeleted(event) {
+    bbox = null;
+
+    clearAll();
+    setDefaultContent();
+}
+
+// Controls
+function onControlOver() {
     map.dragging.disable();
     map.doubleClickZoom.disable();
     map.scrollWheelZoom.disable();
 }
 
-function onWidgetOut() {
+function onControlOut() {
     map.dragging.enable();
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
