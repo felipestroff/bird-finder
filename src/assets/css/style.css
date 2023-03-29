@@ -29,7 +29,7 @@ html, body, #app, #map {
 }
 
 #speciesList {
-    max-height: 70vh;
+    max-height: 60vh;
 }
 
 /* Medium devices (tablets, 768px and down) */
