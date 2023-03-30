@@ -218,8 +218,9 @@ async function querySpecies(term, bbox) {
 function createSpeciesList(data) {
     clearAll();
 
-    if (data.results.length) {
-        for (const [index, item] of data.results.entries()) {
+    const results = filterResults(data.results);
+    if (results.length) {
+        for (const [index, item] of results.entries()) {
             const specieItem = createSpecieItem(item);
             speciesList.innerHTML += specieItem;
 
@@ -238,15 +239,24 @@ function createSpeciesList(data) {
         if (totalResults > config.iNaturalist.params.per_page) {
             createSpeciesPagination();
         }
+
+        const bounds = bbox || speciesLayerGroup.getBounds();
+        map.fitBounds(bounds);
     }
     else {
         setNoResultsFound();
     }
 
-    const bounds = bbox || speciesLayerGroup.getBounds();
-    map.fitBounds(bounds);
-
     toggleLoader(false);
+}
+
+function filterResults(results) {
+    return results.filter((item, index, self) =>
+        index === self.findIndex((t) =>
+            t.taxon.id === item.taxon.id &&
+            t.user.id === item.user.id
+        )
+    );
 }
 
 function createSpecieMarker(index, item) {
@@ -255,14 +265,30 @@ function createSpecieMarker(index, item) {
 
     let images = '';
     let countImages = 0;
-    for (const [photoIndex, photo] of item.observation_photos.entries()) {
-        const photoUrl = photo.photo.url.replace('square', 'large');
+    for (const [photoIndex, photoItem] of item.observation_photos.entries()) {
+        const photoUrl = photoItem.photo.url.replace('square', 'large');
 
         images += `<div class="carousel-item ${photoIndex === 0 ? 'active' : ''}">
             <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
         </div>`;
 
         countImages++;
+    }
+
+    let sounds = '';
+    let countSounds = '';
+    if (countImages === 0) {
+        for (const [soundIndex, soundItem] of item.observation_sounds.entries()) {
+            const soundUrl = soundItem.sound.file_url;
+
+            sounds += `<div class="carousel-item ${soundIndex === 0 ? 'active' : ''}">
+                <audio controls class="w-100">
+                    <source src="${soundUrl}" class="d-block w-auto mx-auto">
+                </audio>
+            </div>`;
+    
+            countSounds++;
+        }
     }
 
     let wikiaves_link = '';
@@ -281,7 +307,7 @@ function createSpecieMarker(index, item) {
         .bindPopup(`<div class="card" style="width: 16rem;">
             <div class="card-img-top">
                 <div id="carousel_${index}" class="carousel carousel-dark slide">
-                    <div class="carousel-inner">${images}</div>
+                    <div class="carousel-inner">${images || sounds}</div>
                     <button class="carousel-control-prev ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     </button>
@@ -322,13 +348,19 @@ function clearSpeciesMarkers() {
 }
 
 function createSpecieItem(item) {
-    const photoUrl = item.observation_photos.length ? item.observation_photos[0].photo.url : './src/assets/images/icon-192x192.png';
+    let thumbnail;
+    if (item.observation_photos.length) {
+        thumbnail = `<img class="img-thumbnail rounded" src="${item.observation_photos[0].photo.url}" style="height: 75px;">`;
+    }
+    else {
+        thumbnail = '<img class="img-thumbnail rounded" src="./src/assets/images/sound.png" style="height: 75px;">';
+    }
 
     const specieItem = `<div>
         <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
             onclick="showSpecieLocation(this, ${item.taxon.id})"
         >
-            <img class="img-thumbnail rounded" src="${photoUrl}" style="height: 75px;">
+            ${thumbnail}
             <h6 class="text-wrap ms-2" style="width: 12rem;">
                 ${item.taxon.preferred_common_name || item.taxon.english_common_name}
             </h6>
