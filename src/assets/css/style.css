@@ -13,6 +13,10 @@ html, body, #app, #map {
     width: 100vw;
 }
 
+a[title="Save changes"] {
+    display: none;
+}
+
 #loader {
     width: 3rem;
     height: 3rem;
@@ -21,7 +25,6 @@ html, body, #app, #map {
     top: calc(50% - 3rem);
     z-index: 1056;
 }
-
 
 #speciesControlContent {
     width: 25vw;

@@ -14,12 +14,16 @@
     "Click first point to close this shape": "Clique no primeiro ponto para fechar esta forma",
     "Click to start drawing shape": "Clique para começar a desenhar a forma",
     "Click and drag to draw rectangle": "Clique e arraste para desenhar um retângulo",
+    "Click on a feature to remove": "Clique em um desenho para remover",
     "Release to finish drawing": "Solte para terminar o desenho",
     "Radius": "Raio",
     "Delete last point": "Excluir último ponto",
     "Delete last point drawn": "Excluir último ponto desenhado",
     "Cancel": "Cancelar",
     "Cancel drawing": "Cancelar desenho",
+    "Cancel editing, discards all changes": "Cancela a edição, descarta todas as alterações",
+    "Clear All": "Limpar tudo",
+    "Clear all layers": "Limpar todas os desenhos",
     "Finish": "Terminar",
     "Finish drawing": "Terminar desenho"
 }

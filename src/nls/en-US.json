@@ -14,12 +14,16 @@
     "Click first point to close this shape": "Click first point to close this shape",
     "Click to start drawing shape": "Click to start drawing shape",
     "Click and drag to draw rectangle": "Click and drag to draw rectangle",
+    "Click on a feature to remove": "Click on a feature to remove",
     "Release to finish drawing": "Release to finish drawing",
     "Radius": "Radius",
     "Delete last point": "Delete last point",
     "Delete last point drawn": "Delete last point drawn",
     "Cancel": "Cancel",
     "Cancel drawing": "Cancel drawing",
+    "Cancel editing, discards all changes": "Cancel editing, discards all changes",
+    "Clear All": "Clear All",
+    "Clear all layers": "Clear all layers",
     "Finish": "Finish",
     "Finish drawing": "Finish drawing"
 }

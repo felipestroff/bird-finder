@@ -91,7 +91,14 @@ function createDrawControl() {
     L.drawLocal.draw.toolbar.undo.text = translate('Delete last point');
     L.drawLocal.draw.toolbar.undo.title = translate('Delete last point drawn');
 
+    L.drawLocal.edit.handlers.remove.tooltip.text = translate('Click on a feature to remove');
+    L.drawLocal.edit.toolbar.actions.cancel.text = translate('Cancel');
+    L.drawLocal.edit.toolbar.actions.cancel.title = translate('Cancel editing, discards all changes');
+    L.drawLocal.edit.toolbar.actions.clearAll.text = translate('Clear All');
+    L.drawLocal.edit.toolbar.actions.clearAll.title = translate('Clear all layers');
+
     drawnLayerGroup = L.featureGroup().addTo(map);
+
     new L.Control.Draw({
         edit: {
             featureGroup: drawnLayerGroup,
@@ -258,7 +265,15 @@ function createSpecieMarker(index, item) {
         countImages++;
     }
 
-    const nameLink = item.taxon.preferred_common_name.replaceAll(' ', '_');
+    let wikiaves_link = '';
+    let allaboutbirds_link = '';
+    if (lang === 'pt-BR') {
+        wikiaves_link = `<a href="https://www.wikiaves.com.br/wiki/${item.taxon.preferred_common_name}" target="_blank" class="btn btn-danger btn-sm text-white">WikiAves</a>`;
+    }
+    else {
+        const nameLink = item.taxon.preferred_common_name.replaceAll(' ', '_');
+        allaboutbirds_link = `<a href="https://www.allaboutbirds.org/guide/${nameLink}" target="_blank" class="btn btn-light btn-sm text-dark">All About Birds</a>`;
+    }
 
     const marker = L.marker(latLng, {
             taxon_id: item.taxon.id
@@ -288,9 +303,9 @@ function createSpecieMarker(index, item) {
                     </span>
                 </a>
                 <div class="mt-3">
-                    <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white" role="button">iNaturalist</a>
-                    <a href="https://www.wikiaves.com.br/wiki/${item.taxon.preferred_common_name}" target="_blank" class="btn btn-danger btn-sm text-white ${lang !== 'pt-BR' ? 'd-none' : ''}" role="button">WikiAves</a>
-                    <a href="https://www.allaboutbirds.org/guide/${nameLink}" target="_blank" class="btn btn-light btn-sm text-dark ${lang !== 'en-US' ? 'd-none' : ''}" role="button">All About Birds</a>
+                    <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white">iNaturalist</a>
+                    ${wikiaves_link}
+                    ${allaboutbirds_link}
                 </div>
             </div>
             <div class="card-footer text-body-secondary">
@@ -471,6 +486,8 @@ function onDrawDeleted(event) {
 
     clearAll();
     setDefaultContent();
+
+    toggleLoader(false);
 }
 
 // Controls
