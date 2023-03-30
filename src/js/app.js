@@ -258,6 +258,8 @@ function createSpecieMarker(index, item) {
         countImages++;
     }
 
+    const nameLink = item.taxon.preferred_common_name.replaceAll(' ', '_');
+
     const marker = L.marker(latLng, {
             taxon_id: item.taxon.id
         })
@@ -288,7 +290,7 @@ function createSpecieMarker(index, item) {
                 <div class="mt-3">
                     <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white" role="button">iNaturalist</a>
                     <a href="https://www.wikiaves.com.br/wiki/${item.taxon.preferred_common_name}" target="_blank" class="btn btn-danger btn-sm text-white ${lang !== 'pt-BR' ? 'd-none' : ''}" role="button">WikiAves</a>
-                    <a href="${item.taxon.wikipedia_url}" target="_blank" class="btn btn-light btn-sm text-dark ${lang !== 'en-US' ? 'd-none' : ''}" role="button">Wikipedia</a>
+                    <a href="https://www.allaboutbirds.org/guide/${nameLink}" target="_blank" class="btn btn-light btn-sm text-dark ${lang !== 'en-US' ? 'd-none' : ''}" role="button">All About Birds</a>
                 </div>
             </div>
             <div class="card-footer text-body-secondary">
