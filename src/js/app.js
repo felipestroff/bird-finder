@@ -293,47 +293,45 @@ function createSpecieMarker(item) {
     }
 
     const marker = L.marker(latLng, {
-            id: item.id
-        })
-        .bindPopup(`<div class="card" style="width: 16rem;">
-            <div class="card-img-top">
-                <div id="carousel_${item.id}" class="carousel carousel-dark slide">
-                    <div class="carousel-inner">${images || sounds}</div>
-                    <button class="carousel-control-prev ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    </button>
-                    <button class="carousel-control-next ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    </button>
-                </div>
+        id: item.id
+    })
+    .bindPopup(`<div class="card" style="width: 16rem;">
+        <div class="card-img-top">
+            <div id="carousel_${item.id}" class="carousel carousel-dark slide">
+                <div class="carousel-inner">${images || sounds}</div>
+                <button class="carousel-control-prev ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
             </div>
-            <div class="card-body">
-                <h5 class="card-title">${item.taxon.preferred_common_name}<h5>
-                <h6 class="card-subtitle mb-2 text-body-secondary">
-                    ${item.description || ''}
-                </h6>
-                <p class="card-text">${item.place_guess}</p>
-                <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
-                    <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
-                    <span class="text-wrap ms-2" style="width: 12rem;">
-                        ${translate('Registered by')} ${item.user.name || item.user.login}
-                    </span>
-                </a>
-                <div class="mt-3">
-                    <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white">iNaturalist</a>
-                    ${wikiaves_link}
-                    ${allaboutbirds_link}
-                </div>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">${item.taxon.preferred_common_name}<h5>
+            <h6 class="card-subtitle mb-2 text-body-secondary">
+                ${item.description || ''}
+            </h6>
+            <p class="card-text">${item.place_guess}</p>
+            <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
+                <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
+                <span class="text-wrap ms-2" style="width: 12rem;">
+                    ${translate('Registered by')} ${item.user.name || item.user.login}
+                </span>
+            </a>
+            <div class="mt-3">
+                <a href="${item.uri}" target="_blank" class="btn btn-success btn-sm text-white">iNaturalist</a>
+                ${wikiaves_link}
+                ${allaboutbirds_link}
             </div>
-            <div class="card-footer text-body-secondary">
-                ${translate('Registered in')} ${createdAt}
-            </div>
-        <div>`, {
-            closeOnClick: false
-        })
-        .addTo(speciesLayerGroup);
-
-    console.log(marker)
+        </div>
+        <div class="card-footer text-body-secondary">
+            ${translate('Registered in')} ${createdAt}
+        </div>
+    <div>`, {
+        closeOnClick: false
+    })
+    .addTo(speciesLayerGroup);
 }
 
 function clearSpeciesMarkers() {
