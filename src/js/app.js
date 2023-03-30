@@ -275,7 +275,7 @@ function createSpecieMarker(item) {
             const soundUrl = soundItem.sound.file_url;
 
             carouselItems += `<div class="carousel-item ${soundIndex === 0 ? 'active' : ''}">
-                <audio controls class="w-100">
+                <audio controls class="d-block w-75 mx-auto">
                     <source src="${soundUrl}" class="d-block w-auto mx-auto">
                 </audio>
             </div>`;
@@ -307,7 +307,7 @@ function createSpecieMarker(item) {
     const marker = L.marker(latLng, {
         id: item.id
     })
-    .bindPopup(`<div class="card" style="width: 16rem;">
+    .bindPopup(`<div class="card" style="width: 18rem;">
         <div class="card-img-top">
             <div id="${carouselId}" class="carousel carousel-dark slide">
                 <div class="carousel-inner">${carouselItems}</div>
