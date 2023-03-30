@@ -218,7 +218,7 @@ async function querySpecies(term, bbox) {
 function createSpeciesList(data) {
     clearAll();
 
-    const results = filterResults(data.results);
+    const results = data.results;
     if (results.length) {
         for (const item of results) {
             const specieItem = createSpecieItem(item);
@@ -248,15 +248,6 @@ function createSpeciesList(data) {
     }
 
     toggleLoader(false);
-}
-
-function filterResults(results) {
-    return results.filter((item, index, self) =>
-        index === self.findIndex((t) => (
-            t.community_taxon_id === item.community_taxon_id &&
-            t.user.id === item.user.id
-        ))
-    );
 }
 
 function createSpecieMarker(item) {
