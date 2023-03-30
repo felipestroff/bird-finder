@@ -220,11 +220,11 @@ function createSpeciesList(data) {
 
     const results = filterResults(data.results);
     if (results.length) {
-        for (const [index, item] of results.entries()) {
+        for (const item of results) {
             const specieItem = createSpecieItem(item);
             speciesList.innerHTML += specieItem;
 
-            createSpecieMarker(index, item);
+            createSpecieMarker(item);
         }
 
         totalResults = data.total_results;
@@ -252,14 +252,14 @@ function createSpeciesList(data) {
 
 function filterResults(results) {
     return results.filter((item, index, self) =>
-        index === self.findIndex((t) =>
-            t.taxon.id === item.taxon.id &&
+        index === self.findIndex((t) => (
+            t.community_taxon_id === item.community_taxon_id &&
             t.user.id === item.user.id
-        )
+        ))
     );
 }
 
-function createSpecieMarker(index, item) {
+function createSpecieMarker(item) {
     const latLng = item.geojson.coordinates.reverse();
     const createdAt = new Date(item.created_at).toLocaleDateString(lang);
 
@@ -302,16 +302,16 @@ function createSpecieMarker(index, item) {
     }
 
     const marker = L.marker(latLng, {
-            taxon_id: item.taxon.id
+            id: item.id
         })
         .bindPopup(`<div class="card" style="width: 16rem;">
             <div class="card-img-top">
-                <div id="carousel_${index}" class="carousel carousel-dark slide">
+                <div id="carousel_${item.id}" class="carousel carousel-dark slide">
                     <div class="carousel-inner">${images || sounds}</div>
-                    <button class="carousel-control-prev ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="prev">
+                    <button class="carousel-control-prev ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     </button>
-                    <button class="carousel-control-next ${countImages <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${index}" data-bs-slide="next">
+                    <button class="carousel-control-next ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     </button>
                 </div>
@@ -341,6 +341,8 @@ function createSpecieMarker(index, item) {
             closeOnClick: false
         })
         .addTo(speciesLayerGroup);
+
+    console.log(marker)
 }
 
 function clearSpeciesMarkers() {
@@ -358,7 +360,7 @@ function createSpecieItem(item) {
 
     const specieItem = `<div>
         <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-            onclick="showSpecieLocation(this, ${item.taxon.id})"
+            onclick="showSpecieLocation(this, ${item.id})"
         >
             ${thumbnail}
             <h6 class="text-wrap ms-2" style="width: 12rem;">
@@ -414,9 +416,9 @@ function clearAll() {
     clearSpeciesPagination();
 }
 
-function showSpecieLocation(target, taxonId) {
+function showSpecieLocation(target, id) {
     const marker = speciesLayerGroup.getLayers().find(layer => {
-        return layer.options.taxon_id === taxonId;
+        return layer.options.id === id;
     });
 
     const items = speciesList.getElementsByClassName('list-group-item');
