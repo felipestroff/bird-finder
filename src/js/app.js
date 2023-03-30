@@ -253,33 +253,45 @@ function createSpeciesList(data) {
 function createSpecieMarker(item) {
     const latLng = item.geojson.coordinates.reverse();
     const createdAt = new Date(item.created_at).toLocaleDateString(lang);
+    const carouselId = `carousel_${item.id}`;
 
-    let images = '';
-    let countImages = 0;
-    for (const [photoIndex, photoItem] of item.observation_photos.entries()) {
-        const photoUrl = photoItem.photo.url.replace('square', 'large');
+    let carouselItems = '';
+    const photos = item.observation_photos;
+    const sounds = item.observation_sounds;
+    // Images
+    if (photos && photos.length) {
+        for (const [photoIndex, photoItem] of photos.entries()) {
+            const photoUrl = photoItem.photo.url.replace('square', 'large');
 
-        images += `<div class="carousel-item ${photoIndex === 0 ? 'active' : ''}">
-            <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
-        </div>`;
-
-        countImages++;
+            carouselItems += `<div class="carousel-item ${photoIndex === 0 ? 'active' : ''}">
+                <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
+            </div>`;
+        }
     }
 
-    let sounds = '';
-    let countSounds = '';
-    if (countImages === 0) {
-        for (const [soundIndex, soundItem] of item.observation_sounds.entries()) {
+    // Sounds
+    if (sounds && sounds.length) {
+        for (const [soundIndex, soundItem] of sounds.entries()) {
             const soundUrl = soundItem.sound.file_url;
 
-            sounds += `<div class="carousel-item ${soundIndex === 0 ? 'active' : ''}">
+            carouselItems += `<div class="carousel-item ${soundIndex === 0 ? 'active' : ''}">
                 <audio controls class="w-100">
                     <source src="${soundUrl}" class="d-block w-auto mx-auto">
                 </audio>
             </div>`;
-    
-            countSounds++;
         }
+    }
+
+    let carouselControls = '';
+    if (photos && photos.length > 1 || sounds && sounds.length > 1) {
+        carouselControls = `
+            <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+        `;
     }
 
     let wikiaves_link = '';
@@ -297,14 +309,9 @@ function createSpecieMarker(item) {
     })
     .bindPopup(`<div class="card" style="width: 16rem;">
         <div class="card-img-top">
-            <div id="carousel_${item.id}" class="carousel carousel-dark slide">
-                <div class="carousel-inner">${images || sounds}</div>
-                <button class="carousel-control-prev ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                </button>
-                <button class="carousel-control-next ${countImages <= 1 || countSounds <= 1 ? 'd-none' : ''}" type="button" data-bs-target="#carousel_${item.id}" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                </button>
+            <div id="${carouselId}" class="carousel carousel-dark slide">
+                <div class="carousel-inner">${carouselItems}</div>
+                ${carouselControls}
             </div>
         </div>
         <div class="card-body">
