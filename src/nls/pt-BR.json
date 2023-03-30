@@ -25,5 +25,9 @@
     "Clear All": "Limpar tudo",
     "Clear all layers": "Limpar todas os desenhos",
     "Finish": "Terminar",
-    "Finish drawing": "Terminar desenho"
+    "Finish drawing": "Terminar desenho",
+    "Help": "Ajuda",
+    "To search for a location and get more accurate results, type for example: City, State": "Para pesquisar um local e obter resultados mais precisos, digite por exemplo: Chapada dos Veadeiros, GO",
+    "It is also possible to search the species by common names of the region or scientific name": "Também é possível pesquisar as espécies pelos nomes comuns da região ou nome científico",
+    "When you finish your search, you can click on the desired species in the list or on the map markers to see more details about it": "Ao finalizar sua busca, você pode clicar na espécie desejada na lista ou nos marcadores do mapa para ver mais detalhes sobre ela"
 }

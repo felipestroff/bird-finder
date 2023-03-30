@@ -17,6 +17,11 @@ a[title="Save changes"] {
     display: none;
 }
 
+.control-content {
+    width: 25vw;
+    height: auto;
+}
+
 #loader {
     width: 3rem;
     height: 3rem;
@@ -26,18 +31,13 @@ a[title="Save changes"] {
     z-index: 1056;
 }
 
-#speciesControlContent {
-    width: 25vw;
-    height: auto;
-}
-
 #speciesList {
-    max-height: 60vh;
+    max-height: 55vh;
 }
 
 /* Medium devices (tablets, 768px and down) */
 @media (max-width: 768px) {
-    #speciesControlContent {
-        width: 75vw;
+    .control-content {
+        width: 70vw;
     }
 }

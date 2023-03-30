@@ -22,7 +22,14 @@
       <div id="map"></div>
 
       <div id="langControl">
-        <button id="langControlBtn" class="btn btn-link btn-sm" type="button"></button>
+        <button id="langControlBtn" class="btn btn-light btn-sm" type="button"></button>
+      </div>
+
+      <div id="helpControl">
+        <button id="helpControlBtn" class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent">
+          <i class="bi bi-info-circle"></i>
+        </button>
+        <div class="control-content collapse" id="helpControlContent"></div>
       </div>
 
       <div id="speciesControl">
@@ -31,13 +38,15 @@
             <img src="src/assets/images/binoculars.png" style="height: 2.5rem;">
           </button>
         </div>
-        <div id="speciesControlContent" class="collapse collapse-horizontal show bg-white">
-          <div class="input-group p-3">
-            <input id="specieSearchInput" type="text" class="form-control">
-            <button id="specieSearchBtn" class="input-group-text btn-link">
-              <i class="bi bi-search"></i>
-            </button>
-          </div>
+        <div id="speciesControlContent" class="control-content collapse collapse-horizontal show bg-white rounded">
+          <form id="speciesSearchForm" class="p-2">
+            <div class="input-group">
+              <input id="specieSearchInput" type="text" class="form-control">
+              <button id="specieSearchBtn" class="input-group-text btn-link">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </form>
 
           <div id="speciesList" class="list-group overflow-auto"></div>
 

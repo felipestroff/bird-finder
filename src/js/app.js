@@ -68,9 +68,60 @@ function createMap() {
     })
     .addTo(map);
 
+    createLangControl();
+    createHelpControl();
     createDrawControl();
     createSpeciesControl();
-    createLangControl();
+}
+
+function createLangControl() {
+    L.Control.lang = L.Control.extend({
+        position: 'bottomleft',
+        onAdd: function() {
+            return langControl;
+        }
+    });
+    L.control.lang = function(opts) {
+        return new L.Control.lang(opts);
+    }
+    L.control.lang({
+        position: 'bottomleft'
+    })
+    .addTo(map);
+
+    const langIcon = `<img src="./src/assets/images/${lang}.png" style="height: 14px;">`;
+    langControlBtn.innerHTML = langIcon;
+    langControlBtn.title = lang;
+    langControlBtn.addEventListener('click', changeAppLang, false);
+}
+
+function createHelpControl() {
+    L.Control.help = L.Control.extend({
+        position: 'bottomleft',
+        onAdd: function() {
+            return helpControl;
+        }
+    });
+    L.control.help = function(opts) {
+        return new L.Control.help(opts);
+    }
+    L.control.help({
+        position: 'bottomleft'
+    })
+    .addTo(map);
+
+    helpControlBtn.title = translate('Help');
+    helpControlContent.innerHTML = `<ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            ${translate('To search for a location and get more accurate results, type for example: City, State')}
+        </li>
+        <li class="list-group-item">
+            ${translate('It is also possible to search the species by common names of the region or scientific name')}
+        </li>
+        <li class="list-group-item">
+            ${translate('When you finish your search, you can click on the desired species in the list or on the map markers to see more details about it')}
+        </li>
+    </ul>`;
 }
 
 function createDrawControl() {
@@ -134,8 +185,11 @@ function createSpeciesControl() {
         toggle: false
     });
 
+    speciesSearchForm.addEventListener('submit', onSpecieSearchSubmit, false);
+
     specieSearchInput.setAttribute('placeholder', translate('Type here'));
     specieSearchInput.addEventListener('change', onSpecieSearchInputChange, false);
+
     specieSearchBtn.addEventListener('click', specieSearch, false);
 
     // Mobile
@@ -150,26 +204,6 @@ function createSpeciesControl() {
     }
 
     setDefaultContent();
-}
-
-function createLangControl() {
-    L.Control.lang = L.Control.extend({
-        position: 'bottomleft',
-        onAdd: function() {
-            return langControl;
-        }
-    });
-    L.control.lang = function(opts) {
-        return new L.Control.lang(opts);
-    }
-    L.control.lang({
-        position: 'bottomleft'
-    })
-    .addTo(map);
-
-    const langIcon = `<img src="./src/assets/images/${lang}.png" style="height: 30px;">`;
-    langControlBtn.innerHTML = langIcon;
-    langControlBtn.addEventListener('click', changeAppLang, false);
 }
 
 async function specieSearch() {
@@ -531,6 +565,12 @@ function onControlOut() {
     map.dragging.enable();
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
+}
+
+function onSpecieSearchSubmit(event) {
+    event.preventDefault();
+
+    specieSearch();
 }
 
 function onSpecieSearchInputChange() {
