@@ -290,6 +290,7 @@ function createSpecieMarker(item) {
     const carouselId = `carousel_${item.id}`;
 
     let carouselItems = '';
+    let countItems = 0;
     const photos = item.observation_photos;
     const sounds = item.observation_sounds;
     // Images
@@ -301,6 +302,8 @@ function createSpecieMarker(item) {
                 <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
             </div>`;
         }
+
+        countItems++;
     }
 
     // Sounds
@@ -308,16 +311,18 @@ function createSpecieMarker(item) {
         for (const [soundIndex, soundItem] of sounds.entries()) {
             const soundUrl = soundItem.sound.file_url;
 
-            carouselItems += `<div class="carousel-item ${soundIndex === 0 ? 'active' : ''}">
+            carouselItems += `<div class="carousel-item ${!photos && soundIndex === 0 ? 'active' : ''}">
                 <audio controls class="d-block w-75 mx-auto">
                     <source src="${soundUrl}" class="d-block w-auto mx-auto">
                 </audio>
             </div>`;
         }
+
+        countItems++;
     }
 
     let carouselControls = '';
-    if (photos && photos.length > 1 || sounds && sounds.length > 1) {
+    if (countItems > 1) {
         carouselControls = `
             <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
