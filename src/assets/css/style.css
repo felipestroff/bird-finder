@@ -2,6 +2,8 @@
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@latest/font/bootstrap-icons.css');
 @import url('https://unpkg.com/leaflet@1.9.3/dist/leaflet.css');
 @import url('https://unpkg.com/leaflet-draw/dist/leaflet.draw.css');
+@import url('https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css');
+@import url('https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css');
 
 body {
     padding: 0;
@@ -20,6 +22,15 @@ html, body, #app, #map {
     left: calc(50% - (3rem / 2));
     top: calc(50% - 3rem);
     z-index: 1056;
+}
+
+#speciesControl:has(.show) {
+    background-color: white;
+}
+
+#actions {
+    left: 10px;
+    top: 10px;
 }
 
 #speciesList {
@@ -41,7 +52,7 @@ a[title="Save changes"] {
 }
 
 .popup-description {
-    height: 100px;
+    max-height: 100px;
 }
 
 /* Medium devices (tablets, 768px and down) */

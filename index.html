@@ -34,10 +34,13 @@
       <div id="speciesControl">
         <div class="d-flex justify-content-end">
           <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#speciesControlContent" aria-expanded="false" aria-controls="speciesControlContent">
-            <img src="src/assets/images/binoculars.png" style="height: 2.5rem;">
+            <img src="src/assets/images/binoculars.png" style="height: 2rem;">
           </button>
         </div>
+        
         <div id="speciesControlContent" class="control-content collapse collapse-horizontal show bg-white rounded">
+          <div id="actions" class="position-absolute d-grid gap-2 d-flex justify-content-start"></div>
+
           <form id="speciesSearchForm" class="p-2">
             <div class="input-group">
               <input id="specieSearchInput" type="text" class="form-control">
@@ -66,6 +69,8 @@
       crossorigin="">
     </script>
     <script src="https://unpkg.com/leaflet-draw"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="src/js/config.js"></script>
     <script src="src/js/app.js"></script>
   </body>
 </html>

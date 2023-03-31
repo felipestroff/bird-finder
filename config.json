@@ -4,7 +4,8 @@
     },
     "map": {
         "latLng": [-13.7028062, -69.6972495],
-        "zoom": 4
+        "zoom": 2,
+        "minZoom": 2
     },
     "iNaturalist": {
         "apiUrl": "https://api.inaturalist.org/v1",

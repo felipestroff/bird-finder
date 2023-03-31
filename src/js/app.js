@@ -1,61 +1,17 @@
 // Global variables
-const isMobile = L.Browser.mobile;
-
-let config;
-let lang;
-let langConfig;
-let map;
-let drawnLayerGroup;
-let speciesLayerGroup;
-let speciesControlCollapse;
-let searchType;
-let bbox;
-let totalPages = 1;
-let page = 1;
-let totalResults = 0;
+var map;
+var drawLayer;
+var markersLayer;
+var bbox;
+var page = 1;
+var speciesControl_collapse;
 
 // Methods
-async function init() {
-    config = await fetchConfig();
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    lang = urlParams.get('lang') || config.app.defaultLang;
-    langConfig = await fetchLangConfig(lang);
-
-    document.documentElement.lang = lang;
-
-    createMap();
-}
-
-async function fetchConfig() {
-    const response = await fetch('./config.json');
-    return response.json();
-}
-
-async function fetchLangConfig(lang) {
-    const response = await fetch(`./src/nls/${lang}.json`);
-    return response.json();
-}
-
-function translate(string) {
-    return langConfig[string] || string;
-}
-
-function changeAppLang(event) {
-    const newLang = lang === 'pt-BR' ? 'en-US' : 'pt-BR';
-
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.delete('lang');
-    urlParams.append('lang', newLang);
-  
-    const newUrl = `${window.location.origin}${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
-    
-    window.location.replace(newUrl);
-}
-
 function createMap() {
-    map = L.map('map').setView(config.map.latLng, config.map.zoom);
+    map = L.map('map', {
+        minZoom: config.map.minZoom
+    })
+    .setView(config.map.latLng, config.map.zoom);
 
     map.removeControl(map.zoomControl);
 
@@ -98,11 +54,11 @@ function createDrawControl() {
     L.drawLocal.edit.toolbar.actions.clearAll.text = translate('Clear All');
     L.drawLocal.edit.toolbar.actions.clearAll.title = translate('Clear all layers');
 
-    drawnLayerGroup = L.featureGroup().addTo(map);
+    drawLayer = L.featureGroup().addTo(map);
 
     new L.Control.Draw({
         edit: {
-            featureGroup: drawnLayerGroup,
+            featureGroup: drawLayer,
             edit: false
         },
         draw: {
@@ -165,7 +121,10 @@ function createHelpControl() {
 }
 
 function createSpeciesControl() {
-    speciesLayerGroup = L.featureGroup().addTo(map);
+    markersLayer = L.markerClusterGroup({
+        retainPopup: true
+    })
+    .addTo(map);
 
     L.Control.species = L.Control.extend({
         position: 'topright',
@@ -181,16 +140,16 @@ function createSpeciesControl() {
     })
     .addTo(map);
 
-    speciesControlCollapse = new bootstrap.Collapse('#speciesControlContent', {
+    speciesControl_collapse = new bootstrap.Collapse('#speciesControlContent', {
         toggle: false
     });
 
-    speciesSearchForm.addEventListener('submit', onSpecieSearchSubmit, false);
+    speciesSearchForm.addEventListener('submit', onSearchSubmit, false);
 
     specieSearchInput.setAttribute('placeholder', translate('Type here'));
-    specieSearchInput.addEventListener('change', onSpecieSearchInputChange, false);
+    specieSearchInput.addEventListener('change', onSearchInputChange, false);
 
-    specieSearchBtn.addEventListener('click', specieSearch, false);
+    specieSearchBtn.addEventListener('click', search, false);
 
     // Mobile
     if (isMobile) {
@@ -206,10 +165,10 @@ function createSpeciesControl() {
     setDefaultContent();
 }
 
-async function specieSearch() {
+async function search() {
     const term = specieSearchInput.value;
     if (term || bbox) {
-        speciesControlCollapse.show();
+        speciesControl_collapse.show();
 
         toggleLoader(true);
 
@@ -252,29 +211,29 @@ async function querySpecies(term, bbox) {
 function createSpeciesList(data) {
     clearAll();
 
+    page = data.page;
+
     const results = data.results;
     if (results.length) {
         for (const item of results) {
             const specieItem = createSpecieItem(item);
             speciesList.innerHTML += specieItem;
 
-            createSpecieMarker(item);
+            createMarker(item);
         }
 
-        totalResults = data.total_results;
-
-        totalPages = totalResults / config.iNaturalist.params.per_page;
+        const totalResults = data.total_results;
+        
+        let totalPages = totalResults / config.iNaturalist.params.per_page;
         if (totalPages % 1 !== 0) {
             totalPages = parseInt(totalPages) + 1;
         }
 
-        page = data.page;
-
         if (totalResults > config.iNaturalist.params.per_page) {
-            createSpeciesPagination();
+            createPagination(totalPages);
         }
 
-        const bounds = bbox || speciesLayerGroup.getBounds();
+        const bounds = bbox || markersLayer.getBounds();
         map.fitBounds(bounds);
     }
     else {
@@ -284,7 +243,7 @@ function createSpeciesList(data) {
     toggleLoader(false);
 }
 
-function createSpecieMarker(item) {
+function createMarker(item) {
     const latLng = item.geojson.coordinates.reverse();
     const popupContent = setPopupContent(item);
 
@@ -294,7 +253,14 @@ function createSpecieMarker(item) {
     .bindPopup(popupContent, {
         closeOnClick: false
     })
-    .addTo(speciesLayerGroup);
+    .addTo(markersLayer);
+
+    marker.on('popupopen', onPopupOpen);
+    marker.on('popupclose', onPopupClose);
+}
+
+function clearMarkers() {
+    markersLayer.clearLayers();
 }
 
 function setPopupContent(item) {
@@ -360,7 +326,7 @@ function setPopupContent(item) {
         </div>
         <div class="card-body">
             <h5 class="card-title">${item.taxon.preferred_common_name}</h5>
-            <div class="popup-description overflow-auto">
+            <div class="popup-description overflow-auto ${!item.description ? 'd-none' : ''}">
                 <h6 class="card-subtitle mb-2 text-body-secondary">
                     ${item.description || ''}
                 </h6>
@@ -384,8 +350,40 @@ function setPopupContent(item) {
     <div>`;
 }
 
-function clearSpeciesMarkers() {
-    speciesLayerGroup.clearLayers();
+function openPopup(target, id) {
+    const marker = markersLayer.getLayers().find(layer => {
+        return layer.options.id === id;
+    });
+
+    let bounds;
+    
+    if (!target.classList.contains('active')) {
+        const latLng = marker.getLatLng();
+        bounds = L.latLngBounds(latLng, latLng);
+
+        setTimeout(() => {
+            const cluster = markersLayer.getVisibleParent(marker);
+            if (cluster) {
+                markersLayer.zoomToShowLayer(marker, () => {
+                    marker.openPopup();
+                });
+            }
+            else {
+                marker.openPopup();
+            }
+        }, 500);
+
+        if (isMobile) {
+            speciesControl_collapse.hide();
+        }
+    }
+    else {
+        marker.closePopup();
+
+        bounds = bbox || markersLayer.getBounds();
+    }
+
+    map.fitBounds(bounds);
 }
 
 function createSpecieItem(item) {
@@ -398,8 +396,8 @@ function createSpecieItem(item) {
     }
 
     const specieItem = `<div>
-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-            onclick="showSpecieLocation(this, ${item.id})"
+        <a href="#" id="item_${item.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            onclick="openPopup(this, ${item.id})"
         >
             ${thumbnail}
             <h6 class="text-wrap ms-2" style="width: 12rem;">
@@ -411,25 +409,48 @@ function createSpecieItem(item) {
     return specieItem;
 }
 
-function createSpeciesPagination() {
-    speciesPagination.innerHTML = `
-        <li class="page-item ${page === 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="goToPreviousPage()">&laquo;</a>
-        </li>
-        <li class="page-item">
-            <input class="form-control text-center" type="number" value="${page}" min="1" max="${totalPages}" onchange="goToPageNumber(this)">
-        </li>
-        <li class="page-item ${page === totalPages ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="goToNextPage()">&raquo;</a>
-        </li>
-    `;
-}
-
 function setDefaultContent() {
+    actions.innerHTML = `
+        <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="setDefaultExtent()" title="${translate('Default view')}">
+            <i class="bi bi-globe-americas"></i>
+        </button>
+        <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="clearFilters()" title="${translate('Clear filters')}">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    `;
+
     speciesList.innerHTML = `<div class="p-3">
         <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
         <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
     </div>`;
+}
+
+function createPagination(totalPages) {
+    speciesPagination.innerHTML = `
+        <li class="page-item ${page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="paginate(${page - 1}, ${totalPages})">&laquo;</a>
+        </li>
+        <li class="page-item">
+            <input class="form-control text-center" type="number" value="${page}" min="1" max="${totalPages}" onchange="paginate(this.value, ${totalPages})">
+        </li>
+        <li class="page-item ${page === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="paginate(${page + 1}, ${totalPages})">&raquo;</a>
+        </li>
+    `;
+}
+
+function setDefaultExtent() {
+    map.setView(config.map.latLng, config.map.zoom);
+}
+
+function clearFilters() {
+    bbox = null;
+    specieSearchInput.value = '';
+
+    drawLayer.clearLayers();
+
+    clearAll();
+    setDefaultContent();
 }
 
 function setNoResultsFound() {
@@ -450,68 +471,16 @@ function clearSpeciesPagination() {
 }
 
 function clearAll() {
-    clearSpeciesMarkers();
+    clearMarkers();
     clearSpeciesList();
     clearSpeciesPagination();
 }
 
-function showSpecieLocation(target, id) {
-    const marker = speciesLayerGroup.getLayers().find(layer => {
-        return layer.options.id === id;
-    });
-
-    const items = speciesList.getElementsByClassName('list-group-item');
-    for (const item of items) {
-        if (item !== target) {
-            item.classList.remove('active');
-        }
-    }
-
-    let bounds;
-    
-    if (!target.classList.contains('active')) {
-        target.classList.add('active');
-
-        const latLng = marker.getLatLng();
-        bounds = L.latLngBounds(latLng, latLng);
-
-        setTimeout(() => {
-            marker.openPopup();
-        }, 500);
-
-        if (isMobile) {
-            speciesControlCollapse.hide();
-        }
-    }
-    else {
-        target.classList.remove('active');
-
-        marker.closePopup();
-
-        bounds = bbox || speciesLayerGroup.getBounds();
-    }
-
-    map.fitBounds(bounds);
-}
-
-function goToPreviousPage() {
-    page = parseInt(page) - 1;
-    paginate(page);
-}
-
-function goToPageNumber(target) {
-    page = parseInt(target.value);
-    paginate(page);
-}
-
-function goToNextPage() {
-    page = parseInt(page) + 1;
-    paginate(page);
-}
-
-function paginate() {
-    if (page >= 1 && page <= totalPages) {
-        specieSearch();
+function paginate(pageNumber, totalPages) {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        page = pageNumber;
+        
+        search();
     }
 }
 
@@ -529,13 +498,13 @@ function toggleLoader(bool) {
 function onDrawStart(event) {
     map.closePopup();
 
-    speciesControlCollapse.hide();
+    speciesControl_collapse.hide();
 }
 
 function onDrawCreated(event) {
     page = 1;
 
-    drawnLayerGroup.clearLayers();
+    drawLayer.clearLayers();
     
     const layer = event.layer;
 
@@ -549,9 +518,9 @@ function onDrawCreated(event) {
         bbox = latLng.toBounds(radius);
     }
 
-    drawnLayerGroup.addLayer(layer);
+    drawLayer.addLayer(layer);
 
-    specieSearch();
+    search();
 }
 
 function onDrawDeleted(event) {
@@ -576,14 +545,32 @@ function onControlOut() {
     map.scrollWheelZoom.enable();
 }
 
-function onSpecieSearchSubmit(event) {
+function onSearchSubmit(event) {
     event.preventDefault();
 
-    specieSearch();
+    search();
 }
 
-function onSpecieSearchInputChange() {
+function onSearchInputChange() {
     page = 1;
 }
 
-init();
+function onPopupOpen(event) {
+    const popup = event.popup;
+    const id = event.target.options.id;
+    const item = document.getElementById(`item_${id}`);
+    item.classList.add('active');
+    item.focus();
+
+    const latLng = popup.getLatLng();
+    const newLat = latLng.lat + 0.0010;
+    const newLatLng = [newLat, latLng.lng];
+
+    map.setView(newLatLng);
+}
+
+function onPopupClose(event) {
+    const id = event.target.options.id;
+    const item = document.getElementById(`item_${id}`);
+    item.classList.remove('active');
+}
