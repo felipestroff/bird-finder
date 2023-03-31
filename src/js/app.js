@@ -20,7 +20,7 @@ function createMap() {
     map.on('draw:deleted', onDrawDeleted);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: `&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors | ${translate('Developed and maintained by')} <a href="https://www.linkedin.com/in/felipestroff" target="_blank">Felipe Stroff</a>`
     })
     .addTo(map);
 
