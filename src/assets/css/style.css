@@ -17,6 +17,11 @@ a[title="Save changes"] {
     display: none;
 }
 
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+    border: 1px solid #adb5bd;
+}
+
 .control-content {
     width: 25vw;
     height: auto;

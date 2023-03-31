@@ -68,10 +68,50 @@ function createMap() {
     })
     .addTo(map);
 
+    createDrawControl();
     createLangControl();
     createHelpControl();
-    createDrawControl();
     createSpeciesControl();
+}
+
+function createDrawControl() {
+    L.drawLocal.draw.handlers.circle.radius = translate('Radius');
+    L.drawLocal.draw.handlers.circle.tooltip.start = translate('Click and drag to draw circle');
+    L.drawLocal.draw.handlers.polygon.tooltip.cont = translate('Click to continue drawing shape');
+    L.drawLocal.draw.handlers.polygon.tooltip.end = translate('Click first point to close this shape');
+    L.drawLocal.draw.handlers.polygon.tooltip.start = translate('Click to start drawing shape');
+    L.drawLocal.draw.handlers.rectangle.tooltip.start = translate('Click and drag to draw rectangle');
+    L.drawLocal.draw.handlers.simpleshape.tooltip.end = translate('Release to finish drawing');
+    L.drawLocal.draw.toolbar.actions.text = translate('Cancel');
+    L.drawLocal.draw.toolbar.actions.title = translate('Cancel drawing');
+    L.drawLocal.draw.toolbar.buttons.polygon = translate('Draw a polygon');
+    L.drawLocal.draw.toolbar.buttons.rectangle = translate('Draw a rectangle');
+    L.drawLocal.draw.toolbar.buttons.circle = translate('Draw a circle');
+    L.drawLocal.draw.toolbar.finish.text = translate('Finish');
+    L.drawLocal.draw.toolbar.finish.title = translate('Finish drawing');
+    L.drawLocal.draw.toolbar.undo.text = translate('Delete last point');
+    L.drawLocal.draw.toolbar.undo.title = translate('Delete last point drawn');
+
+    L.drawLocal.edit.handlers.remove.tooltip.text = translate('Click on a feature to remove');
+    L.drawLocal.edit.toolbar.actions.cancel.text = translate('Cancel');
+    L.drawLocal.edit.toolbar.actions.cancel.title = translate('Cancel editing, discards all changes');
+    L.drawLocal.edit.toolbar.actions.clearAll.text = translate('Clear All');
+    L.drawLocal.edit.toolbar.actions.clearAll.title = translate('Clear all layers');
+
+    drawnLayerGroup = L.featureGroup().addTo(map);
+
+    new L.Control.Draw({
+        edit: {
+            featureGroup: drawnLayerGroup,
+            edit: false
+        },
+        draw: {
+            circlemarker: false,
+            marker: false,
+            polyline: false
+        }
+    })
+    .addTo(map);
 }
 
 function createLangControl() {
@@ -122,46 +162,6 @@ function createHelpControl() {
             ${translate('When you finish your search, you can click on the desired species in the list or on the map markers to see more details about it')}
         </li>
     </ul>`;
-}
-
-function createDrawControl() {
-    L.drawLocal.draw.handlers.circle.radius = translate('Radius');
-    L.drawLocal.draw.handlers.circle.tooltip.start = translate('Click and drag to draw circle');
-    L.drawLocal.draw.handlers.polygon.tooltip.cont = translate('Click to continue drawing shape');
-    L.drawLocal.draw.handlers.polygon.tooltip.end = translate('Click first point to close this shape');
-    L.drawLocal.draw.handlers.polygon.tooltip.start = translate('Click to start drawing shape');
-    L.drawLocal.draw.handlers.rectangle.tooltip.start = translate('Click and drag to draw rectangle');
-    L.drawLocal.draw.handlers.simpleshape.tooltip.end = translate('Release to finish drawing');
-    L.drawLocal.draw.toolbar.actions.text = translate('Cancel');
-    L.drawLocal.draw.toolbar.actions.title = translate('Cancel drawing');
-    L.drawLocal.draw.toolbar.buttons.polygon = translate('Draw a polygon');
-    L.drawLocal.draw.toolbar.buttons.rectangle = translate('Draw a rectangle');
-    L.drawLocal.draw.toolbar.buttons.circle = translate('Draw a circle');
-    L.drawLocal.draw.toolbar.finish.text = translate('Finish');
-    L.drawLocal.draw.toolbar.finish.title = translate('Finish drawing');
-    L.drawLocal.draw.toolbar.undo.text = translate('Delete last point');
-    L.drawLocal.draw.toolbar.undo.title = translate('Delete last point drawn');
-
-    L.drawLocal.edit.handlers.remove.tooltip.text = translate('Click on a feature to remove');
-    L.drawLocal.edit.toolbar.actions.cancel.text = translate('Cancel');
-    L.drawLocal.edit.toolbar.actions.cancel.title = translate('Cancel editing, discards all changes');
-    L.drawLocal.edit.toolbar.actions.clearAll.text = translate('Clear All');
-    L.drawLocal.edit.toolbar.actions.clearAll.title = translate('Clear all layers');
-
-    drawnLayerGroup = L.featureGroup().addTo(map);
-
-    new L.Control.Draw({
-        edit: {
-            featureGroup: drawnLayerGroup,
-            edit: false
-        },
-        draw: {
-            circlemarker: false,
-            marker: false,
-            polyline: false
-        }
-    })
-    .addTo(map);
 }
 
 function createSpeciesControl() {
@@ -286,11 +286,22 @@ function createSpeciesList(data) {
 
 function createSpecieMarker(item) {
     const latLng = item.geojson.coordinates.reverse();
+    const popupContent = setPopupContent(item);
+
+    const marker = L.marker(latLng, {
+        id: item.id
+    })
+    .bindPopup(popupContent, {
+        closeOnClick: false
+    })
+    .addTo(speciesLayerGroup);
+}
+
+function setPopupContent(item) {
     const createdAt = new Date(item.created_at).toLocaleDateString(lang);
     const carouselId = `carousel_${item.id}`;
 
     let carouselItems = '';
-    let countItems = 0;
     const photos = item.observation_photos;
     const sounds = item.observation_sounds;
     // Images
@@ -302,8 +313,6 @@ function createSpecieMarker(item) {
                 <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
             </div>`;
         }
-
-        countItems++;
     }
 
     // Sounds
@@ -311,16 +320,15 @@ function createSpecieMarker(item) {
         for (const [soundIndex, soundItem] of sounds.entries()) {
             const soundUrl = soundItem.sound.file_url;
 
-            carouselItems += `<div class="carousel-item ${!photos && soundIndex === 0 ? 'active' : ''}">
+            carouselItems += `<div class="carousel-item ${!photos.length && soundIndex === 0 ? 'active' : ''}">
                 <audio controls class="d-block w-75 mx-auto">
                     <source src="${soundUrl}" class="d-block w-auto mx-auto">
                 </audio>
             </div>`;
         }
-
-        countItems++;
     }
 
+    const countItems = (photos && photos.length) + (sounds && sounds.length);
     let carouselControls = '';
     if (countItems > 1) {
         carouselControls = `
@@ -343,10 +351,7 @@ function createSpecieMarker(item) {
         allaboutbirds_link = `<a href="https://www.allaboutbirds.org/guide/${nameLink}" target="_blank" class="btn btn-light btn-sm text-dark">All About Birds</a>`;
     }
 
-    const marker = L.marker(latLng, {
-        id: item.id
-    })
-    .bindPopup(`<div class="card" style="width: 18rem;">
+    return `<div class="card" style="width: 18rem;">
         <div class="card-img-top">
             <div id="${carouselId}" class="carousel carousel-dark slide">
                 <div class="carousel-inner">${carouselItems}</div>
@@ -374,10 +379,7 @@ function createSpecieMarker(item) {
         <div class="card-footer text-body-secondary">
             ${translate('Registered in')} ${createdAt}
         </div>
-    <div>`, {
-        closeOnClick: false
-    })
-    .addTo(speciesLayerGroup);
+    <div>`;
 }
 
 function clearSpeciesMarkers() {
