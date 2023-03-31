@@ -60,4 +60,8 @@ a[title="Save changes"] {
     .control-content {
         width: 70vw;
     }
+
+    #langControl {
+        margin-bottom: 40px;
+    }
 }
