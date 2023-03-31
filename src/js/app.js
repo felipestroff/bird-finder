@@ -359,10 +359,12 @@ function setPopupContent(item) {
             </div>
         </div>
         <div class="card-body">
-            <h5 class="card-title">${item.taxon.preferred_common_name}<h5>
-            <h6 class="card-subtitle mb-2 text-body-secondary">
-                ${item.description || ''}
-            </h6>
+            <h5 class="card-title">${item.taxon.preferred_common_name}</h5>
+            <div class="popup-description overflow-auto">
+                <h6 class="card-subtitle mb-2 text-body-secondary">
+                    ${item.description || ''}
+                </h6>
+            </div>
             <p class="card-text">${item.place_guess}</p>
             <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
                 <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
