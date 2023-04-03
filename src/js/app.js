@@ -15,6 +15,7 @@ function createMap() {
 
     map.removeControl(map.zoomControl);
 
+    map.on('locationfound', onLocationFound);
     map.on('draw:drawstart', onDrawStart);
     map.on('draw:created', onDrawCreated);
     map.on('draw:deleted', onDrawDeleted);
@@ -24,10 +25,52 @@ function createMap() {
     })
     .addTo(map);
 
+    createLocationControl();
     createDrawControl();
     createLangControl();
     createHelpControl();
     createSpeciesControl();
+}
+
+function createLocationControl() {
+    L.Control.location = L.Control.extend({
+        position: 'topright',
+        onAdd: function() {
+            return locationControl;
+        }
+    });
+    L.control.location = function(opts) {
+        return new L.Control.location(opts);
+    }
+    L.control.location({
+        position: 'topleft'
+    })
+    .addTo(map);
+
+    locationControlForm.innerHTML = `
+        <h6>${translate('To search for species from your location, first define an area around it and then click on the button')}.</h6>
+        <div class="mb-3">
+            <label for="bufferRange" class="form-label">${translate('Buffer')}</label>
+            <input type="range" class="form-range" id="bufferRange" min="1" value="10" onchange="onBufferChange(this.value)">
+            <div id="bufferHelp" class="form-text">10 ${translate('kilometers')}</div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary btn-sm" type="submit">${translate('Search')}</button>
+        </div>
+    `;
+
+    locationControlForm.addEventListener('submit', onLocationSubmit, false);
+
+    // Mobile
+    if (isMobile) {
+        locationControl.addEventListener('touchstart', onControlOver, false);
+        locationControl.addEventListener('touchend', onControlOut, false);
+    }
+    // Desktop
+    else {
+        locationControl.addEventListener('mouseover', onControlOver, false);
+        locationControl.addEventListener('mouseout', onControlOut, false);
+    }
 }
 
 function createDrawControl() {
@@ -513,6 +556,34 @@ function toggleLoader(bool) {
 
 // Events
 // Map
+function onLocationFound(event) {
+    const latLng = event.latlng;
+    const marker = L.marker(latLng, {
+        icon: L.divIcon({
+            html: '<i class="bi bi-person-fill" style="font-size: 38px;"></i>',
+            className: 'text-primary border-dark-subtle shadow-lg',
+            iconAnchor: [0, 0],
+            popupAnchor: [19, 16]
+        })
+    })
+    .bindPopup(`<h6>${translate('You')}</h6>`)
+    .addTo(drawLayer)
+    .openPopup();
+
+    const radiusInKm = parseInt(bufferRange.value);
+    const radiusInM = radiusInKm * 1000;
+    const circle = L.circle(latLng, {
+        radius: radiusInM
+    })
+    .addTo(drawLayer);
+
+    bbox = circle.getBounds();
+
+    map.fitBounds(bbox);
+
+    search();
+}
+
 function onDrawStart(event) {
     map.closePopup();
 
@@ -561,6 +632,20 @@ function onControlOut() {
     map.dragging.enable();
     map.doubleClickZoom.enable();
     map.scrollWheelZoom.enable();
+}
+
+function onBufferChange(value) {
+    bufferHelp.innerText = value + ' ' + translate('kilometers');
+}
+
+function onLocationSubmit(event) {
+    event.preventDefault();
+
+    drawLayer.clearLayers();
+
+    map.locate({
+        enableHighAccuracy: true
+    });
 }
 
 function onSearchSubmit(event) {

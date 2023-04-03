@@ -20,6 +20,18 @@
     <div id="app" class="position-absolute">
       <div id="map"></div>
 
+      <div id="locationControl">
+        <div class="d-flex justify-content-start">
+          <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" aria-expanded="false" aria-controls="locationControlContent">
+            <i class="bi bi-geo-alt-fill"></i>
+          </button>
+        </div>
+
+        <div id="locationControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
+          <form id="locationControlForm" class="p-2"></form>
+        </div>
+      </div>
+
       <div id="langControl">
         <button id="langControlBtn" class="btn btn-light btn-sm border-dark-subtle" type="button"></button>
       </div>
@@ -33,7 +45,7 @@
 
       <div id="speciesControl">
         <div class="d-flex justify-content-end">
-          <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#speciesControlContent" aria-expanded="false" aria-controls="speciesControlContent">
+          <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#speciesControlContent" aria-expanded="true" aria-controls="speciesControlContent">
             <img src="src/assets/images/binoculars.png" style="height: 2rem;">
           </button>
         </div>
