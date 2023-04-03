@@ -213,7 +213,7 @@ function createSpeciesList(data) {
 
     page = data.page;
 
-    const results = data.results;
+    const results = filterResults(data.results);
     if (results.length) {
         for (const item of results) {
             const specieItem = createSpecieItem(item);
@@ -241,6 +241,10 @@ function createSpeciesList(data) {
     }
 
     toggleLoader(false);
+}
+
+function filterResults(results) {
+    return results.filter(item => item.geojson);
 }
 
 function createMarker(item) {
