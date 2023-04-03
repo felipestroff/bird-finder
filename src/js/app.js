@@ -1,10 +1,9 @@
 // Global variables
 var map;
-var drawLayer;
-var markersLayer;
+var drawLayer, markersLayer;
 var bbox;
 var page = 1;
-var speciesControl_collapse;
+var speciesControl_collapse, locationControl_collapse;
 
 // Methods
 function createMap() {
@@ -46,6 +45,10 @@ function createLocationControl() {
         position: 'topleft'
     })
     .addTo(map);
+
+    locationControl_collapse = new bootstrap.Collapse('#locationControlContent', {
+        toggle: false
+    });
 
     locationControlForm.innerHTML = `
         <h6>${translate('To search for species from your location, first define an area around it and then click on the button')}.</h6>
@@ -184,7 +187,7 @@ function createSpeciesControl() {
     .addTo(map);
 
     speciesControl_collapse = new bootstrap.Collapse('#speciesControlContent', {
-        toggle: false
+        toggle: true
     });
 
     speciesSearchForm.addEventListener('submit', onSearchSubmit, false);
@@ -211,6 +214,7 @@ function createSpeciesControl() {
 async function search() {
     const term = specieSearchInput.value;
     if (term || bbox) {
+        locationControl_collapse.hide();
         speciesControl_collapse.show();
 
         toggleLoader(true);
@@ -419,6 +423,7 @@ function openPopup(target, id) {
         }, 500);
 
         if (isMobile) {
+            locationControl_collapse.hide();
             speciesControl_collapse.hide();
         }
     }
@@ -587,6 +592,7 @@ function onLocationFound(event) {
 function onDrawStart(event) {
     map.closePopup();
 
+    locationControl_collapse.hide();
     speciesControl_collapse.hide();
 }
 
