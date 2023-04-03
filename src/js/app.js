@@ -230,7 +230,7 @@ function createSpeciesList(data) {
         }
 
         if (totalResults > config.iNaturalist.params.per_page) {
-            createPagination(totalPages);
+            createPagination(totalResults, totalPages);
         }
 
         const bounds = bbox || markersLayer.getBounds();
@@ -250,9 +250,7 @@ function createMarker(item) {
     const marker = L.marker(latLng, {
         id: item.id
     })
-    .bindPopup(popupContent, {
-        closeOnClick: false
-    })
+    .bindPopup(popupContent)
     .addTo(markersLayer);
 
     marker.on('popupopen', onPopupOpen);
@@ -425,7 +423,7 @@ function setDefaultContent() {
     </div>`;
 }
 
-function createPagination(totalPages) {
+function createPagination(totalResults, totalPages) {
     speciesPagination.innerHTML = `
         <li class="page-item ${page === 1 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="paginate(${page - 1}, ${totalPages})">&laquo;</a>
@@ -459,21 +457,21 @@ function setNoResultsFound() {
         <h6>${translate('Please try again with other filters')}.</h6>
     </div>`;
 
-    clearSpeciesPagination();
+    clearPagination();
 }
 
 function clearSpeciesList() {
     speciesList.innerHTML = '';
 }
 
-function clearSpeciesPagination() {
+function clearPagination() {
     speciesPagination.innerHTML = '';
 }
 
 function clearAll() {
     clearMarkers();
     clearSpeciesList();
-    clearSpeciesPagination();
+    clearPagination();
 }
 
 function paginate(pageNumber, totalPages) {
