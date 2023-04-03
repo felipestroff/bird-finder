@@ -389,12 +389,28 @@ function openPopup(target, id) {
 }
 
 function createSpecieItem(item) {
+    console.log(item)
+
     let thumbnail;
     if (item.observation_photos.length) {
         thumbnail = `<img class="img-thumbnail rounded" src="${item.observation_photos[0].photo.url}" style="height: 75px;">`;
     }
     else {
         thumbnail = '<img class="img-thumbnail rounded" src="./src/assets/images/sound.png" style="height: 75px;">';
+    }
+
+    let name;
+    if (item.taxon.preferred_common_name) {
+        name = item.taxon.preferred_common_name;
+    }
+    else if (item.taxon.english_common_name) {
+        name = item.taxon.english_common_name;
+    }
+    else if (item.species_guess) {
+        name = item.species_guess;
+    }
+    else {
+        name = translate('Unnamed');
     }
 
     const specieItem = `<div>
