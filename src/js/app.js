@@ -437,8 +437,6 @@ function openPopup(target, id) {
 }
 
 function createSpecieItem(item) {
-    console.log(item)
-
     let thumbnail;
     if (item.observation_photos.length) {
         thumbnail = `<img class="img-thumbnail rounded" src="${item.observation_photos[0].photo.url}" style="height: 75px;">`;
@@ -565,10 +563,9 @@ function onLocationFound(event) {
     const latLng = event.latlng;
     const marker = L.marker(latLng, {
         icon: L.divIcon({
-            html: '<i class="bi bi-person-fill" style="font-size: 38px;"></i>',
+            html: '<i class="bi bi-person-fill" style="font-size: 30px;"></i>',
             className: 'text-primary border-dark-subtle shadow-lg',
-            iconAnchor: [0, 0],
-            popupAnchor: [19, 16]
+            popupAnchor: [9, 9]
         })
     })
     .bindPopup(`<h6>${translate('You')}</h6>`)
