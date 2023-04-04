@@ -49,7 +49,7 @@ function createLocationControl() {
                 </div>
                 <div id="locationControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
                     <form id="locationControlForm" class="p-2" onsubmit="onLocationSubmit(event)">
-                        <h6>${translate('To search for species from your location, first define an area around it and then click on the button')}.</h6>
+                        <p>${translate('To search for species from your location, first define an area around it and then click on the button')}.</p>
                         <div class="mb-3">
                             <label for="bufferRange" class="form-label">${translate('Buffer')}</label>
                             <input type="range" class="form-range" id="bufferRange" min="1" value="10" onchange="onBufferChange(this.value)">
@@ -205,8 +205,8 @@ function createListControl() {
                     </form>
                     <div id="listControlItems" class="list-group overflow-auto" style="max-height: 55vh;">
                         <div class="p-3">
-                            <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
-                            <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
+                            <p>${translate('Enter above or select an area to begin your bird species search')}.</p>
+                            <p>${translate('To do so, use the drawing tools located on the left side')}.</p>
                         </div>
                     </div>
                     <nav class="d-flex justify-content-center align-items-center mt-3">
@@ -501,8 +501,8 @@ function createListItem(item) {
 
 function clearListControlItems() {
     listControlItems.innerHTML = `<div class="p-3">
-        <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
-        <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
+        <p>${translate('Enter above or select an area to begin your bird species search')}.</p>
+        <p>${translate('To do so, use the drawing tools located on the left side')}.</p>
     </div>`;
 }
 
@@ -535,8 +535,8 @@ function clearFilters() {
 
 function setNoResultsFound() {
     listControlItems.innerHTML = `<div class="p-3">
-        <h6>${translate('No results found')}.</h6>
-        <h6>${translate('Please try again with other filters')}.</h6>
+        <p>${translate('No results found')}.</p>
+        <p>${translate('Please try again with other filters')}.</p>
     </div>`;
 
     clearPagination();
@@ -591,7 +591,7 @@ function onLocationFound(event) {
             popupAnchor: [9, 9]
         })
     })
-    .bindPopup(`<h6>${translate('You')}</h6>`)
+    .bindPopup(`<center>${translate('You')}</center>`)
     .addTo(drawLayer)
     .openPopup();
 
