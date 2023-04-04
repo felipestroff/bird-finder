@@ -8,82 +8,26 @@
 
     <title>Bird Finder</title>
 
+    <!-- Icons -->
     <link rel="icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="src/assets/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="src/assets/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="src/assets/images/favicon-16x16.png">
 
+    <!-- Manifest -->
     <link rel="manifest" href="manifest.json" />
+
+    <!-- CSS -->
     <link rel="stylesheet" href="src/assets/css/style.css">
   </head>
   <body>
     <div id="app" class="position-absolute">
       <div id="map"></div>
-
-      <div id="locationControl">
-        <div class="d-flex justify-content-start">
-          <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" aria-expanded="false" aria-controls="locationControlContent">
-            <i class="bi bi-geo-alt-fill"></i>
-          </button>
-        </div>
-
-        <div id="locationControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
-          <form id="locationControlForm" class="p-2"></form>
-        </div>
-      </div>
-
-      <div id="langControl">
-        <button id="langControlBtn" class="btn btn-light btn-sm border-dark-subtle" type="button"></button>
-      </div>
-
-      <div id="helpControl">
-        <button id="helpControlBtn" class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent">
-          <i class="bi bi-info-circle"></i>
-        </button>
-        <div class="control-content collapse" id="helpControlContent"></div>
-      </div>
-
-      <div id="speciesControl">
-        <div class="d-flex justify-content-end">
-          <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#speciesControlContent" aria-expanded="false" aria-controls="speciesControlContent">
-            <img src="src/assets/images/binoculars.png" style="height: 2rem;">
-          </button>
-        </div>
-        
-        <div id="speciesControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
-          <div id="actions" class="position-absolute d-grid gap-2 d-flex justify-content-start"></div>
-
-          <form id="speciesSearchForm" class="p-2">
-            <div class="input-group">
-              <input id="specieSearchInput" type="text" class="form-control">
-              <button id="specieSearchBtn" class="input-group-text btn-link">
-                <i class="bi bi-search"></i>
-              </button>
-            </div>
-          </form>
-
-          <div id="speciesList" class="list-group overflow-auto"></div>
-
-          <nav class="d-flex justify-content-center align-items-center mt-3">
-            <ul id="speciesPagination" class="pagination"></ul>
-          </nav>
-
-          <div class="d-flex justify-content-center align-items-center form-text">
-            Powered by <a href="https://api.inaturalist.org/v1/docs" target="_blank" class="ms-1">iNaturalist API</a>
-          </div>
-
-          <div id="loader" class="d-flex justify-content-center d-none">
-            <div class="spinner-border text-success" role="status"></div>
-          </div>
-        </div>
-      </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
-      crossorigin="">
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
     <script src="src/lib/leaflet-draw/leaflet.draw.js"></script>
     <script src="src/lib/leaflet-markercluster/leaflet.markercluster.js"></script>
     <script src="src/js/config.js"></script>

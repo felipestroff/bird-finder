@@ -31,7 +31,7 @@ function translate(string) {
     return langConfig[string] || string;
 }
 
-function changeAppLang(event) {
+function changeAppLang() {
     const newLang = lang === 'pt-BR' ? 'en-US' : 'pt-BR';
 
     const urlParams = new URLSearchParams(window.location.search);

@@ -3,7 +3,6 @@ var map;
 var drawLayer, markersLayer;
 var bbox;
 var page = 1;
-var speciesControl_collapse, locationControl_collapse;
 
 // Methods
 function createMap() {
@@ -24,56 +23,60 @@ function createMap() {
     })
     .addTo(map);
 
+    drawLayer = L.featureGroup().addTo(map);
+
+    markersLayer = L.markerClusterGroup({
+        retainPopup: true
+    })
+    .addTo(map);
+
     createLocationControl();
     createDrawControl();
     createLangControl();
     createHelpControl();
-    createSpeciesControl();
+    createListControl();
 }
 
 function createLocationControl() {
-    L.Control.location = L.Control.extend({
-        position: 'topright',
-        onAdd: function() {
-            return locationControl;
+    const LocationControl = L.Control.location = L.Control.extend({
+        onAdd: () => {
+            const container = L.DomUtil.create('div', 'control leaflet-control');
+            container.innerHTML = `
+                <div class="d-flex justify-content-start">
+                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" aria-expanded="false" aria-controls="locationControlContent" onclick="onCollapseShow(event)">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </button>
+                </div>
+                <div id="locationControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
+                    <form id="locationControlForm" class="p-2" onsubmit="onLocationSubmit(event)">
+                        <h6>${translate('To search for species from your location, first define an area around it and then click on the button')}.</h6>
+                        <div class="mb-3">
+                            <label for="bufferRange" class="form-label">${translate('Buffer')}</label>
+                            <input type="range" class="form-range" id="bufferRange" min="1" value="10" onchange="onBufferChange(this.value)">
+                            <div id="bufferHelp" class="form-text">10 ${translate('kilometers')}</div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button class="btn btn-primary btn-sm" type="submit">${translate('Search')}</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            if (isMobile) {
+                L.DomEvent.on(container, 'touchstart', onControlOver);
+                L.DomEvent.on(container, 'touchend', onControlOut);
+            }
+            else {
+                L.DomEvent.on(container, 'mouseover', onControlOver);
+                L.DomEvent.on(container, 'mouseout', onControlOut);
+            }
+            return container;
         }
     });
-    L.control.location = function(opts) {
-        return new L.Control.location(opts);
-    }
-    L.control.location({
+
+    const control = new LocationControl({
         position: 'topleft'
     })
     .addTo(map);
-
-    locationControl_collapse = new bootstrap.Collapse('#locationControlContent', {
-        toggle: false
-    });
-
-    locationControlForm.innerHTML = `
-        <h6>${translate('To search for species from your location, first define an area around it and then click on the button')}.</h6>
-        <div class="mb-3">
-            <label for="bufferRange" class="form-label">${translate('Buffer')}</label>
-            <input type="range" class="form-range" id="bufferRange" min="1" value="10" onchange="onBufferChange(this.value)">
-            <div id="bufferHelp" class="form-text">10 ${translate('kilometers')}</div>
-        </div>
-        <div class="d-flex justify-content-end">
-            <button class="btn btn-primary btn-sm" type="submit">${translate('Search')}</button>
-        </div>
-    `;
-
-    locationControlForm.addEventListener('submit', onLocationSubmit, false);
-
-    // Mobile
-    if (isMobile) {
-        locationControl.addEventListener('touchstart', onControlOver, false);
-        locationControl.addEventListener('touchend', onControlOut, false);
-    }
-    // Desktop
-    else {
-        locationControl.addEventListener('mouseover', onControlOver, false);
-        locationControl.addEventListener('mouseout', onControlOut, false);
-    }
 }
 
 function createDrawControl() {
@@ -93,16 +96,14 @@ function createDrawControl() {
     L.drawLocal.draw.toolbar.finish.title = translate('Finish drawing');
     L.drawLocal.draw.toolbar.undo.text = translate('Delete last point');
     L.drawLocal.draw.toolbar.undo.title = translate('Delete last point drawn');
-
     L.drawLocal.edit.handlers.remove.tooltip.text = translate('Click on a feature to remove');
     L.drawLocal.edit.toolbar.actions.cancel.text = translate('Cancel');
     L.drawLocal.edit.toolbar.actions.cancel.title = translate('Cancel editing, discards all changes');
     L.drawLocal.edit.toolbar.actions.clearAll.text = translate('Clear All');
     L.drawLocal.edit.toolbar.actions.clearAll.title = translate('Clear all layers');
 
-    drawLayer = L.featureGroup().addTo(map);
-
-    new L.Control.Draw({
+    const control = new L.Control.Draw({
+        position: 'topleft',
         edit: {
             featureGroup: drawLayer,
             edit: false
@@ -117,107 +118,133 @@ function createDrawControl() {
 }
 
 function createLangControl() {
-    L.Control.lang = L.Control.extend({
-        position: 'bottomleft',
-        onAdd: function() {
-            return langControl;
+    const LangControl = L.Control.lang = L.Control.extend({
+        onAdd: () => {
+            const container = L.DomUtil.create('div', 'control leaflet-control');
+            container.innerHTML = `
+                <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${lang}" onclick="changeAppLang()">
+                    <img src="./src/assets/images/${lang}.png" style="height: 14px;">
+                </button>
+            `;
+            return container;
         }
     });
-    L.control.lang = function(opts) {
-        return new L.Control.lang(opts);
-    }
-    L.control.lang({
+
+    const control = new LangControl({
         position: 'bottomleft'
     })
     .addTo(map);
-
-    const langIcon = `<img src="./src/assets/images/${lang}.png" style="height: 14px;">`;
-    langControlBtn.innerHTML = langIcon;
-    langControlBtn.title = lang;
-    langControlBtn.addEventListener('click', changeAppLang, false);
 }
 
 function createHelpControl() {
-    L.Control.help = L.Control.extend({
-        position: 'bottomleft',
-        onAdd: function() {
-            return helpControl;
+    const HelpControl = L.Control.help = L.Control.extend({
+        onAdd: () => {
+            const container = L.DomUtil.create('div', 'control leaflet-control');
+            container.innerHTML = `
+                <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${translate('Help')}" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent" onclick="onCollapseShow(event)">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+                <div class="control-content collapse" id="helpControlContent">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            ${translate('To search for a location and get more accurate results, type for example: City, State')}
+                        </li>
+                        <li class="list-group-item">
+                            ${translate('It is also possible to search the species by common names of the region or scientific name')}
+                        </li>
+                        <li class="list-group-item">
+                            ${translate('When you finish your search, you can click on the desired species in the list or on the map markers to see more details about it')}
+                        </li>
+                    </ul>
+                </div>
+            `;
+            if (isMobile) {
+                L.DomEvent.on(container, 'touchstart', onControlOver);
+                L.DomEvent.on(container, 'touchend', onControlOut);
+            }
+            else {
+                L.DomEvent.on(container, 'mouseover', onControlOver);
+                L.DomEvent.on(container, 'mouseout', onControlOut);
+            }
+            return container;
         }
     });
-    L.control.help = function(opts) {
-        return new L.Control.help(opts);
-    }
-    L.control.help({
+
+    const control = new HelpControl({
         position: 'bottomleft'
     })
     .addTo(map);
-
-    helpControlBtn.title = translate('Help');
-    helpControlContent.innerHTML = `<ul class="list-group list-group-flush">
-        <li class="list-group-item">
-            ${translate('To search for a location and get more accurate results, type for example: City, State')}
-        </li>
-        <li class="list-group-item">
-            ${translate('It is also possible to search the species by common names of the region or scientific name')}
-        </li>
-        <li class="list-group-item">
-            ${translate('When you finish your search, you can click on the desired species in the list or on the map markers to see more details about it')}
-        </li>
-    </ul>`;
 }
 
-function createSpeciesControl() {
-    markersLayer = L.markerClusterGroup({
-        retainPopup: true
-    })
-    .addTo(map);
-
-    L.Control.species = L.Control.extend({
-        position: 'topright',
-        onAdd: function() {
-            return speciesControl;
+function createListControl() {
+    const ListControl = L.Control.list = L.Control.extend({
+        onAdd: () => {
+            const container = L.DomUtil.create('div', 'control leaflet-control');
+            container.innerHTML = `
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#listControlContent" aria-expanded="false" aria-controls="listControlContent" onclick="onCollapseShow(event)">
+                        <img src="src/assets/images/binoculars.png" style="height: 2rem;">
+                    </button>
+                </div>
+                <div id="listControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
+                    <div class="position-absolute d-grid gap-2 d-flex justify-content-start" style="left: 10px; top: 10px;">
+                        <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="setDefaultExtent()" title="${translate('Default view')}">
+                            <i class="bi bi-globe-americas"></i>
+                        </button>
+                        <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="clearFilters()" title="${translate('Clear filters')}">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    <form class="p-2" onsubmit="onSearchSubmit(event)">
+                        <div class="input-group">
+                            <input id="listControlSearchInput" type="text" class="form-control" placeholder="${translate('Type here')}" onchange="onSearchInputChange()">
+                            <button class="input-group-text btn-link" onclick="search()">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="listControlItems" class="list-group overflow-auto" style="max-height: 55vh;">
+                        <div class="p-3">
+                            <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
+                            <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
+                        </div>
+                    </div>
+                    <nav class="d-flex justify-content-center align-items-center mt-3">
+                        <ul id="listControlPagination" class="pagination"></ul>
+                    </nav>
+                    <div class="d-flex justify-content-center align-items-center form-text">
+                        Powered by <a href="https://api.inaturalist.org/v1/docs" target="_blank" class="ms-1">iNaturalist API</a>
+                    </div>
+                    <div id="listControlLoader" class="loader d-flex justify-content-center d-none">
+                        <div class="spinner-border text-success" role="status"></div>
+                    </div>
+                </div>
+            `;
+            if (isMobile) {
+                L.DomEvent.on(container, 'touchstart', onControlOver);
+                L.DomEvent.on(container, 'touchend', onControlOut);
+            }
+            else {
+                L.DomEvent.on(container, 'mouseover', onControlOver);
+                L.DomEvent.on(container, 'mouseout', onControlOut);
+            }
+            return container;
         }
     });
-    L.control.species = function(opts) {
-        return new L.Control.species(opts);
-    }
-    L.control.species({
+
+    const control = new ListControl({
         position: 'topright'
     })
     .addTo(map);
-
-    speciesControl_collapse = new bootstrap.Collapse('#speciesControlContent', {
-        toggle: true
-    });
-
-    speciesSearchForm.addEventListener('submit', onSearchSubmit, false);
-
-    specieSearchInput.setAttribute('placeholder', translate('Type here'));
-    specieSearchInput.addEventListener('change', onSearchInputChange, false);
-
-    specieSearchBtn.addEventListener('click', search, false);
-
-    // Mobile
-    if (isMobile) {
-        speciesControl.addEventListener('touchstart', onControlOver, false);
-        speciesControl.addEventListener('touchend', onControlOut, false);
-    }
-    // Desktop
-    else {
-        speciesControl.addEventListener('mouseover', onControlOver, false);
-        speciesControl.addEventListener('mouseout', onControlOut, false);
-    }
-
-    setDefaultContent();
 }
 
 async function search() {
-    const term = specieSearchInput.value;
+    const term = listControlSearchInput.value;
     if (term || bbox) {
-        locationControl_collapse.hide();
-        speciesControl_collapse.show();
+        hideCollapses();
+        showCollapse(listControlContent);
 
-        toggleLoader(true);
+        toggleListControlLoader(true);
 
         const data = await querySpecies(term, bbox);
         if (data) {
@@ -256,18 +283,18 @@ async function querySpecies(term, bbox) {
 }
 
 function createSpeciesList(data) {
-    clearAll();
-
     page = data.page;
 
     const results = filterResults(data.results);
     if (results.length) {
+        let items = '';
         for (const item of results) {
-            const specieItem = createSpecieItem(item);
-            speciesList.innerHTML += specieItem;
+            const specieItem = createListItem(item);
+            items += specieItem;
 
             createMarker(item);
         }
+        listControlItems.innerHTML = items;
 
         const totalResults = data.total_results;
         
@@ -287,7 +314,7 @@ function createSpeciesList(data) {
         setNoResultsFound();
     }
 
-    toggleLoader(false);
+    toggleListControlLoader(false);
 }
 
 function filterResults(results) {
@@ -423,8 +450,7 @@ function openPopup(target, id) {
         }, 500);
 
         if (isMobile) {
-            locationControl_collapse.hide();
-            speciesControl_collapse.hide();
+            hideCollapses();
         }
     }
     else {
@@ -436,7 +462,7 @@ function openPopup(target, id) {
     map.fitBounds(bounds);
 }
 
-function createSpecieItem(item) {
+function createListItem(item) {
     let thumbnail;
     if (item.observation_photos.length) {
         thumbnail = `<img class="img-thumbnail rounded" src="${item.observation_photos[0].photo.url}" style="height: 75px;">`;
@@ -473,24 +499,15 @@ function createSpecieItem(item) {
     return specieItem;
 }
 
-function setDefaultContent() {
-    actions.innerHTML = `
-        <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="setDefaultExtent()" title="${translate('Default view')}">
-            <i class="bi bi-globe-americas"></i>
-        </button>
-        <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="clearFilters()" title="${translate('Clear filters')}">
-            <i class="bi bi-arrow-clockwise"></i>
-        </button>
-    `;
-
-    speciesList.innerHTML = `<div class="p-3">
+function clearListControlItems() {
+    listControlItems.innerHTML = `<div class="p-3">
         <h6>${translate('Enter above or select an area to begin your bird species search')}.</h6>
         <h6>${translate('To do so, use the drawing tools located on the left side')}.</h6>
     </div>`;
 }
 
 function createPagination(totalResults, totalPages) {
-    speciesPagination.innerHTML = `
+    listControlPagination.innerHTML = `
         <li class="page-item ${page === 1 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="paginate(${page - 1}, ${totalPages})">&laquo;</a>
         </li>
@@ -509,16 +526,15 @@ function setDefaultExtent() {
 
 function clearFilters() {
     bbox = null;
-    specieSearchInput.value = '';
+    listControlSearchInput.value = '';
 
     drawLayer.clearLayers();
 
     clearAll();
-    setDefaultContent();
 }
 
 function setNoResultsFound() {
-    speciesList.innerHTML = `<div class="p-3">
+    listControlItems.innerHTML = `<div class="p-3">
         <h6>${translate('No results found')}.</h6>
         <h6>${translate('Please try again with other filters')}.</h6>
     </div>`;
@@ -526,17 +542,13 @@ function setNoResultsFound() {
     clearPagination();
 }
 
-function clearSpeciesList() {
-    speciesList.innerHTML = '';
-}
-
 function clearPagination() {
-    speciesPagination.innerHTML = '';
+    listControlPagination.innerHTML = '';
 }
 
 function clearAll() {
+    clearListControlItems();
     clearMarkers();
-    clearSpeciesList();
     clearPagination();
 }
 
@@ -548,12 +560,23 @@ function paginate(pageNumber, totalPages) {
     }
 }
 
-function toggleLoader(bool) {
+function toggleListControlLoader(bool) {
     if (bool) {
-        loader.classList.remove('d-none');
+        listControlLoader.classList.remove('d-none');
     }
     else {
-        loader.classList.add('d-none');
+        listControlLoader.classList.add('d-none');
+    }
+}
+
+function showCollapse(collapse) {
+    collapse.classList.add('show');
+}
+
+function hideCollapses() {
+    const collapseElements = document.getElementsByClassName('collapse');
+    for (const collapseEl of collapseElements) {
+        collapseEl.classList.remove('show');
     }
 }
 
@@ -589,8 +612,7 @@ function onLocationFound(event) {
 function onDrawStart(event) {
     map.closePopup();
 
-    locationControl_collapse.hide();
-    speciesControl_collapse.hide();
+    hideCollapses();
 }
 
 function onDrawCreated(event) {
@@ -619,12 +641,26 @@ function onDrawDeleted(event) {
     bbox = null;
 
     clearAll();
-    setDefaultContent();
 
-    toggleLoader(false);
+    toggleListControlLoader(false);
 }
 
 // Controls
+function onCollapseShow(event) {
+    if (isMobile) {
+        event.stopPropagation();
+
+        const elementId = event.delegateTarget.parentElement.id;
+
+        const collapseElements = document.getElementsByClassName('collapse');
+        for (const collapseEl of collapseElements) {
+            if (collapseEl.id !== elementId) {
+                collapseEl.classList.remove('show');
+            }
+        }
+    }
+}
+
 function onControlOver() {
     map.dragging.disable();
     map.doubleClickZoom.disable();
