@@ -1,20 +1,27 @@
 // Global variables
-var config;
-var lang;
-var langConfig;
-var isMobile = L.Browser.mobile;
+let config;
+let lang;
+let langConfig;
+const isMobile = L.Browser.mobile;
 
 async function init() {
-    config = await fetchConfig();
+    try {
+        config = await fetchConfig();
+        lang = getUrlLang() || config.app.defaultLang;
+        langConfig = await fetchLangConfig(lang);
 
+        document.documentElement.lang = lang;
+
+        createMap();
+    }
+    catch (error) {
+        console.error('Error during initialization:', error);
+    }
+}
+
+function getUrlLang() {
     const urlParams = new URLSearchParams(window.location.search);
-
-    lang = urlParams.get('lang') || config.app.defaultLang;
-    langConfig = await fetchLangConfig(lang);
-
-    document.documentElement.lang = lang;
-
-    createMap();
+    return urlParams.get('lang');
 }
 
 async function fetchConfig() {
@@ -43,4 +50,4 @@ function changeAppLang() {
     window.location.replace(newUrl);
 }
 
-init()
+init();
