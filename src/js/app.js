@@ -1,8 +1,8 @@
 // Global variables
-var map;
-var drawLayer, markersLayer;
-var bbox;
-var page = 1;
+let map;
+let drawLayer, markersLayer;
+let bbox;
+let page = 1;
 
 // Methods
 function createMap() {
@@ -30,11 +30,13 @@ function createMap() {
     })
     .addTo(map);
 
-    createLocationControl();
-    createDrawControl();
-    createLangControl();
-    createHelpControl();
-    createListControl();
+    map.whenReady(() => {
+        createLocationControl();
+        createDrawControl();
+        createLangControl();
+        createHelpControl();
+        createListControl();
+    });
 }
 
 function createLocationControl() {
