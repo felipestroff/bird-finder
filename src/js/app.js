@@ -1,4 +1,5 @@
 // Global variables
+let appInstalled;
 let map;
 let drawLayer, markersLayer;
 let bbox;
@@ -159,7 +160,7 @@ function createHelpControl() {
                         </li>
                     </ul>
 
-                    <div class="d-grid gap-2">
+                    <div class="${!appInstalled ? 'd-grid gap-2' : 'd-none'}">
                         <button class="btn btn-success btn-sm" type="button" onclick="installApp()">
                             ${translate('Install App')}
                         </button>
@@ -756,3 +757,19 @@ window.addEventListener('appinstalled', (event) => {
     // Clear the deferredPrompt so it can be garbage collected
     window.deferredPrompt = null;
 });
+
+// Verifica se o navegador suporta a API "matchMedia"
+if ('matchMedia' in window) {
+    // Verifica se o PWA está em modo standalone
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('[app] The PWA is installed on the device!');
+      appInstalled = true;
+    }
+    else {
+      console.log('[app] PWA is not installed on the device.');
+      appInstalled = false;
+    }
+}
+else {
+    console.log('[app] Your browser does not support the matchMedia API.');
+}
