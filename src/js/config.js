@@ -14,7 +14,9 @@ async function init() {
         lang = getUrlLang() || config.app.defaultLang;
 
         // Fetch the language configuration from the 'nls' directory based on the language code
-        langConfig = await fetchLangConfig(lang);
+        if (lang !== 'en-US') {
+            langConfig = await fetchLangConfig(lang);
+        }
 
         // Set the document's language attribute to the selected language
         document.documentElement.lang = lang;
@@ -49,7 +51,7 @@ async function fetchLangConfig(lang) {
 // Function to translate a string using the language configuration
 function translate(string) {
     // Return the translated string if available in the language configuration, otherwise return the original string
-    return langConfig[string] || string;
+    return langConfig && langConfig[string] || string;
 }
 
 // Function to change the application language

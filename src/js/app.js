@@ -158,6 +158,12 @@ function createHelpControl() {
                             ${translate('When you finish your search, you can click on the desired species in the list or on the map markers to see more details about it')}
                         </li>
                     </ul>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-sm" type="button" onclick="installApp()">
+                            ${translate('Install App')}
+                        </button>
+                    </div>
                 </div>
             `;
             if (isMobile) {
@@ -718,3 +724,35 @@ function onPopupClose(event) {
     const item = document.getElementById(`item_${id}`);
     item.classList.remove('active');
 }
+
+// Install app
+async function installApp() {
+    console.log('[app] installBtn-clicked');
+    const promptEvent = window.deferredPrompt;
+    if (!promptEvent) {
+      // The deferred prompt isn't available.
+      return;
+    }
+    // Show the install prompt.
+    promptEvent.prompt();
+    // Log the result
+    const result = await promptEvent.userChoice;
+    console.log('[app] userChoice', result);
+    // Reset the deferred prompt variable, since
+    // prompt() can only be called once.
+    window.deferredPrompt = null;
+}
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    // Prevent the mini-infobar from appearing on mobile.
+    event.preventDefault();
+    console.log('[app] beforeinstallprompt', event);
+    // Stash the event so it can be triggered later.
+    window.deferredPrompt = event;
+});
+
+window.addEventListener('appinstalled', (event) => {
+    console.log('[app] appinstalled', event);
+    // Clear the deferredPrompt so it can be garbage collected
+    window.deferredPrompt = null;
+});
