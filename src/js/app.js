@@ -1,4 +1,5 @@
 // Global variables
+let appInstalled = false;
 let map;
 let drawLayer, markersLayer;
 let bbox;
@@ -757,17 +758,14 @@ window.addEventListener('appinstalled', (event) => {
     window.deferredPrompt = null;
 });
 
-let appInstalled = false;
-// Verifica se o navegador suporta a API "matchMedia"
 if ('matchMedia' in window) {
-    // Verifica se o PWA está em modo standalone
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('[app] The PWA is installed on the device!');
-      appInstalled = true;
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        console.log('[navigator] display-mode is standalone');
+
+        appInstalled = true;
     }
     else {
-      console.log('[app] PWA is not installed on the device.');
-      appInstalled = false;
+        appInstalled = false;
     }
 }
 else {
