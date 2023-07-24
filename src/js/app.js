@@ -1,5 +1,4 @@
 // Global variables
-let appInstalled = false;
 let map;
 let drawLayer, markersLayer;
 let bbox;
@@ -36,7 +35,7 @@ function createMap() {
         createDrawControl();
         createLangControl();
         createHelpControl();
-        createListControl();
+        createSearchControl();
     });
 }
 
@@ -46,8 +45,10 @@ function createLocationControl() {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <div class="d-flex justify-content-start">
-                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" aria-expanded="false" aria-controls="locationControlContent" onclick="onCollapseShow(event)">
-                        <i class="bi bi-geo-alt-fill"></i>
+                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" title="${translate('My Location')}" aria-label="${translate('My Location')}" aria-expanded="false" aria-controls="locationControlContent" onclick="onCollapseShow(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        </svg>
                     </button>
                 </div>
                 <div id="locationControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
@@ -104,6 +105,8 @@ function createDrawControl() {
     L.drawLocal.edit.toolbar.actions.cancel.title = translate('Cancel editing, discards all changes');
     L.drawLocal.edit.toolbar.actions.clearAll.text = translate('Clear All');
     L.drawLocal.edit.toolbar.actions.clearAll.title = translate('Clear all layers');
+    L.drawLocal.edit.toolbar.buttons.removeDisabled = translate('No layers to delete');
+    L.drawLocal.edit.toolbar.buttons.remove = translate('Delete layers');
 
     const control = new L.Control.Draw({
         position: 'topleft',
@@ -126,7 +129,7 @@ function createLangControl() {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${lang}" onclick="changeAppLang()">
-                    <img src="./src/assets/images/${lang}.png" style="height: 14px;">
+                    <img src="./src/assets/images/${lang}.png" alt="${lang}" style="height: 14px;">
                 </button>
             `;
             return container;
@@ -145,7 +148,9 @@ function createHelpControl() {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${translate('Help')}" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent" onclick="onCollapseShow(event)">
-                    <i class="bi bi-info-circle"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                    </svg>
                 </button>
                 <div class="control-content collapse" id="helpControlContent">
                     <ul class="list-group list-group-flush">
@@ -185,30 +190,37 @@ function createHelpControl() {
     .addTo(map);
 }
 
-function createListControl() {
-    const ListControl = L.Control.list = L.Control.extend({
+function createSearchControl() {
+    const SearchControl = L.Control.search = L.Control.extend({
         onAdd: () => {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <div class="d-flex justify-content-end">
-                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#listControlContent" aria-expanded="false" aria-controls="listControlContent" onclick="onCollapseShow(event)">
-                        <img src="src/assets/images/binoculars.png" style="height: 2rem;">
+                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#listControlContent" title="${translate('Search')}" aria-label="${translate('Search')}" aria-expanded="false" aria-controls="listControlContent" onclick="onCollapseShow(event)">
+                        <img src="src/assets/images/binoculars.png" alt="Pesquisar" style="height: 2rem;">
                     </button>
                 </div>
                 <div id="listControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
                     <div class="position-absolute d-grid gap-2 d-flex justify-content-start" style="left: 10px; top: 10px;">
                         <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="setDefaultExtent()" title="${translate('Default view')}">
-                            <i class="bi bi-globe-americas"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-globe-americas" viewBox="0 0 16 16">
+                                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM2.04 4.326c.325 1.329 2.532 2.54 3.717 3.19.48.263.793.434.743.484-.08.08-.162.158-.242.234-.416.396-.787.749-.758 1.266.035.634.618.824 1.214 1.017.577.188 1.168.38 1.286.983.082.417-.075.988-.22 1.52-.215.782-.406 1.48.22 1.48 1.5-.5 3.798-3.186 4-5 .138-1.243-2-2-3.5-2.5-.478-.16-.755.081-.99.284-.172.15-.322.279-.51.216-.445-.148-2.5-2-1.5-2.5.78-.39.952-.171 1.227.182.078.099.163.208.273.318.609.304.662-.132.723-.633.039-.322.081-.671.277-.867.434-.434 1.265-.791 2.028-1.12.712-.306 1.365-.587 1.579-.88A7 7 0 1 1 2.04 4.327Z"/>
+                            </svg>
                         </button>
                         <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="clearFilters()" title="${translate('Clear filters')}">
-                            <i class="bi bi-arrow-clockwise"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
                         </button>
                     </div>
                     <form class="p-2" onsubmit="onSearchSubmit(event)">
                         <div class="input-group">
                             <input id="listControlSearchInput" type="text" class="form-control" placeholder="${translate('Type here')}" onchange="onSearchInputChange()">
                             <button class="input-group-text btn-link" onclick="search()">
-                                <i class="bi bi-search"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
                             </button>
                         </div>
                     </form>
@@ -241,7 +253,7 @@ function createListControl() {
         }
     });
 
-    const control = new ListControl({
+    const control = new SearchControl({
         position: 'topright'
     })
     .addTo(map);
@@ -595,9 +607,9 @@ function onLocationFound(event) {
     const latLng = event.latlng;
     const marker = L.marker(latLng, {
         icon: L.divIcon({
-            html: '<i class="bi bi-person-fill" style="font-size: 30px;"></i>',
+            html: '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>',
             className: 'text-primary border-dark-subtle shadow-lg',
-            popupAnchor: [9, 9]
+            popupAnchor: [9, 0]
         })
     })
     .bindPopup(`<center>${translate('You')}</center>`)
@@ -724,50 +736,4 @@ function onPopupClose(event) {
     const id = event.target.options.id;
     const item = document.getElementById(`item_${id}`);
     item.classList.remove('active');
-}
-
-// Install app
-async function installApp() {
-    console.log('[app] installBtn-clicked');
-    const promptEvent = window.deferredPrompt;
-    if (!promptEvent) {
-      // The deferred prompt isn't available.
-      return;
-    }
-    // Show the install prompt.
-    promptEvent.prompt();
-    // Log the result
-    const result = await promptEvent.userChoice;
-    console.log('[app] userChoice', result);
-    // Reset the deferred prompt variable, since
-    // prompt() can only be called once.
-    window.deferredPrompt = null;
-}
-
-window.addEventListener('beforeinstallprompt', (event) => {
-    // Prevent the mini-infobar from appearing on mobile.
-    event.preventDefault();
-    console.log('[app] beforeinstallprompt', event);
-    // Stash the event so it can be triggered later.
-    window.deferredPrompt = event;
-});
-
-window.addEventListener('appinstalled', (event) => {
-    console.log('[app] appinstalled', event);
-    // Clear the deferredPrompt so it can be garbage collected
-    window.deferredPrompt = null;
-});
-
-if ('matchMedia' in window) {
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        console.log('[navigator] display-mode is standalone');
-
-        appInstalled = true;
-    }
-    else {
-        appInstalled = false;
-    }
-}
-else {
-    console.log('[app] Your browser does not support the matchMedia API.');
 }

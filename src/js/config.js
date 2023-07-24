@@ -1,8 +1,62 @@
 // Global variables
+let appInstalled = false;
 let config; // Variable to store the application configuration
 let lang; // Variable to store the current language code
 let langConfig; // Variable to store the language configuration
 const isMobile = L.Browser.mobile; // A constant flag to check if the device is mobile or not
+
+// Unregister old service worker
+navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+        registration.unregister();
+    });
+});
+
+// Register the service worker
+// https://developers.google.com/codelabs/pwa-training/pwa03--going-offline
+const swURL = './sw.js';
+if ('serviceWorker' in navigator) {
+    // Wait for the 'load' event to not block other work
+    window.addEventListener('load', async () => {
+        // Try to register the service worker.
+        try {
+            navigator.serviceWorker.register(swURL).then(reg => {
+                console.log('[sw] Registered!', reg);
+            });
+        }
+        catch (err) {
+            console.log('[sw] Registration failed: ', err);
+        }
+    });
+}
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    // Prevent the mini-infobar from appearing on mobile.
+    event.preventDefault();
+    console.log('[app] beforeinstallprompt', event);
+    // Stash the event so it can be triggered later.
+    window.deferredPrompt = event;
+});
+
+window.addEventListener('appinstalled', (event) => {
+    console.log('[app] appinstalled', event);
+    // Clear the deferredPrompt so it can be garbage collected
+    window.deferredPrompt = null;
+});
+
+if ('matchMedia' in window) {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        console.log('[navigator] display-mode is standalone');
+
+        appInstalled = true;
+    }
+    else {
+        appInstalled = false;
+    }
+}
+else {
+    console.log('[app] Your browser does not support the matchMedia API.');
+}
 
 // Function to initialize the application
 async function init() {
@@ -69,6 +123,24 @@ function changeAppLang() {
 
     // Replace the current URL with the new one to change the language
     window.location.replace(newUrl);
+}
+
+// Install app
+async function installApp() {
+    console.log('[app] installBtn-clicked');
+    const promptEvent = window.deferredPrompt;
+    if (!promptEvent) {
+      // The deferred prompt isn't available.
+      return;
+    }
+    // Show the install prompt.
+    promptEvent.prompt();
+    // Log the result
+    const result = await promptEvent.userChoice;
+    console.log('[app] userChoice', result);
+    // Reset the deferred prompt variable, since
+    // prompt() can only be called once.
+    window.deferredPrompt = null;
 }
 
 // Call the 'init' function to initialize the application when the script is loaded
