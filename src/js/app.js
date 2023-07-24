@@ -430,7 +430,7 @@ function setPopupContent(item) {
             </div>
             <p class="card-text">${item.place_guess}</p>
             <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
-                <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/images/icon-192x192.png'}" style="height: 48px;">
+                <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/icons/icon-192x192.png'}" style="height: 48px;">
                 <span class="text-wrap ms-2" style="width: 12rem;">
                     ${translate('Registered by')} ${item.user.name || item.user.login}
                 </span>
