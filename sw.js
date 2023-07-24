@@ -25,6 +25,8 @@ const precacheResources = [
   './src/lib/bootstrap/bootstrap.bundle.js',
   './src/lib/leaflet/leaflet.css',
   './src/lib/leaflet/leaflet.js',
+  './src/lib/leaflet/images/marker-icon.png',
+  './src/lib/leaflet/images/marker-shadow.png',
   './src/lib/leaflet-draw/images/spritesheet.svg',
   './src/lib/leaflet-draw/leaflet.draw.css',
   './src/lib/leaflet-draw/leaflet.draw.js',
