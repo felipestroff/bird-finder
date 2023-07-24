@@ -5,6 +5,7 @@ O aplicativo (PWA) GIS para Identificação de Espécies de Aves é uma ferramen
 ## Tecnologias
 
 - JavaScript
-- HTML/CSS
 - Leaflet
+- HTML/CSS
+- Boostrap
 - PWA
