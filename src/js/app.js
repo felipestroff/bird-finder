@@ -1,5 +1,4 @@
 // Global variables
-let appInstalled;
 let map;
 let drawLayer, markersLayer;
 let bbox;
@@ -758,6 +757,7 @@ window.addEventListener('appinstalled', (event) => {
     window.deferredPrompt = null;
 });
 
+let appInstalled = false;
 // Verifica se o navegador suporta a API "matchMedia"
 if ('matchMedia' in window) {
     // Verifica se o PWA está em modo standalone
