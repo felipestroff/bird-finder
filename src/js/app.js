@@ -392,7 +392,8 @@ function setPopupContent(item) {
         }
     }
 
-    const countItems = (photos && photos.length) + (sounds && sounds.length);
+    const countItems = ((photos && Array.isArray(photos) && photos.length) || 0) + ((sounds && Array.isArray(sounds) && sounds.length) || 0);
+
     let carouselControls = '';
     if (countItems > 1) {
         carouselControls = `
@@ -721,5 +722,7 @@ function onPopupOpen(event) {
 function onPopupClose(event) {
     const id = event.target.options.id;
     const item = document.getElementById(`item_${id}`);
-    item.classList.remove('active');
+    if (item) {
+        item.classList.remove('active');
+    }
 }
