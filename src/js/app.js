@@ -45,7 +45,7 @@ function createLocationControl() {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <div class="d-flex justify-content-start">
-                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" title="${translate('My Location')}" aria-label="${translate('My Location')}" aria-expanded="false" aria-controls="locationControlContent" onclick="onCollapseShow(event)">
+                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#locationControlContent" title="${translate('My Location')}" aria-label="${translate('My Location')}" aria-expanded="false" aria-controls="locationControlContent">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
                             <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
                         </svg>
@@ -147,12 +147,12 @@ function createHelpControl() {
         onAdd: () => {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
-                <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${translate('Help')}" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent" onclick="onCollapseShow(event)">
+                <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${translate('Help')}" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
                         <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
                     </svg>
                 </button>
-                <div class="control-content collapse" id="helpControlContent">
+                <div class="control-content collapse show" id="helpControlContent">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                             ${translate('To search for a location and get more accurate results, type for example: City, State')}
@@ -196,11 +196,11 @@ function createSearchControl() {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <div class="d-flex justify-content-end">
-                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#listControlContent" title="${translate('Search')}" aria-label="${translate('Search')}" aria-expanded="false" aria-controls="listControlContent" onclick="onCollapseShow(event)">
+                    <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#listControlContent" title="${translate('Search')}" aria-label="${translate('Search')}" aria-expanded="false" aria-controls="listControlContent">
                         <img src="src/assets/images/binoculars.png" alt="Pesquisar" style="height: 2rem;">
                     </button>
                 </div>
-                <div id="listControlContent" class="control-content collapse collapse-horizontal bg-white rounded">
+                <div id="listControlContent" class="control-content collapse show collapse-horizontal bg-white rounded">
                     <div class="position-absolute d-grid gap-2 d-flex justify-content-start" style="left: 10px; top: 10px;">
                         <button class="btn btn-light btn-sm border-dark-subtle" type="button" onclick="setDefaultExtent()" title="${translate('Default view')}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-globe-americas" viewBox="0 0 16 16">
@@ -667,21 +667,6 @@ function onDrawDeleted(event) {
 }
 
 // Controls
-function onCollapseShow(event) {
-    if (isMobile) {
-        event.stopPropagation();
-
-        const elementId = event.delegateTarget.parentElement.id;
-
-        const collapseElements = document.getElementsByClassName('collapse');
-        for (const collapseEl of collapseElements) {
-            if (collapseEl.id !== elementId) {
-                collapseEl.classList.remove('show');
-            }
-        }
-    }
-}
-
 function onControlOver() {
     map.dragging.disable();
     map.doubleClickZoom.disable();
