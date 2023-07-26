@@ -217,7 +217,7 @@ function createSearchControl() {
                     <form class="p-2" onsubmit="onSearchSubmit(event)">
                         <div class="input-group">
                             <input id="listControlSearchInput" type="text" class="form-control" placeholder="${translate('Type here')}" onchange="onSearchInputChange()">
-                            <button class="input-group-text btn-link" onclick="search()">
+                            <button class="input-group-text btn-link" onclick="search">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                                 </svg>
@@ -262,6 +262,8 @@ function createSearchControl() {
 async function search() {
     const term = listControlSearchInput.value;
     if (term || bbox) {
+        clearAll();
+
         hideCollapses();
         showCollapse(listControlContent);
 
@@ -306,14 +308,17 @@ async function querySpecies(term, bbox) {
 function createSpeciesList(data) {
     page = data.page;
 
-    const results = filterResults(data.results);
+    const results = data.results;
     if (results.length) {
         let items = '';
-        for (const item of results) {
-            const specieItem = createListItem(item);
-            items += specieItem;
 
-            createMarker(item);
+        for (const item of results) {
+            if (item.geojson) {
+                const specieItem = createListItem(item);
+                items += specieItem;
+
+                createMarker(item);
+            }
         }
         listControlItems.innerHTML = items;
 
@@ -336,10 +341,6 @@ function createSpeciesList(data) {
     }
 
     toggleListControlLoader(false);
-}
-
-function filterResults(results) {
-    return results.filter(item => item.geojson);
 }
 
 function createMarker(item) {
