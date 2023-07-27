@@ -1,7 +1,7 @@
 // https://willianjusten.com.br/como-fazer-seu-site-funcionar-offline-com-pwa
 
 // Choose a cache name
-const staticCacheName = 'cache-v0.1';
+const staticCacheName = 'cache-v0.2';
 
 const precacheResources = [
   './',
