@@ -1,7 +1,8 @@
 // https://willianjusten.com.br/como-fazer-seu-site-funcionar-offline-com-pwa
 
 // Choose a cache name
-const staticCacheName = 'cache-v0.2';
+const CACHE_VERSION = 'v1';
+const CACHE_NAME = `bird-finder-${CACHE_VERSION}`;
 
 const precacheResources = [
   './',
@@ -59,7 +60,7 @@ self.addEventListener('install', (event) => {
   };
 
   event.waitUntil(
-    caches.open(staticCacheName)
+    caches.open(CACHE_NAME)
       .then(filesUpdate)
       .catch((error) => {
         console.error('[sw] Failed to open cache:', error);
@@ -76,7 +77,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames
             .filter((cacheName) => cacheName.startsWith('cache-'))
-            .filter((cacheName) => cacheName !== staticCacheName)
+            .filter((cacheName) => cacheName !== CACHE_NAME)
             .map((cacheName) => caches.delete(cacheName))
         );
       })
