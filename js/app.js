@@ -44,12 +44,12 @@ function createMap() {
 function createLayers() {
     return {
         'OSM': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            //maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }),
         'Satellite': L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${config.app.mapBox_token}`, {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-            maxZoom: 18,
+            //maxZoom: 18,
             id: 'mapbox/satellite-v9',
             tileSize: 512,
             zoomOffset: -1
@@ -278,7 +278,7 @@ function createSearchControl() {
 }
 
 function createLayerControl(layers) {
-    this.controls.layer = L.control.layers(layers, null, { position: 'bottomright' }).addTo(map);
+    L.control.layers(layers, null, { position: 'bottomright' }).addTo(map);
 }
 
 async function search() {
@@ -446,8 +446,12 @@ function setPopupContent(item) {
             </div>
         </div>
         <div class="card-body">
-            <h5 class="card-title">${item.taxon.preferred_common_name}</h5>
-            <div class="popup-description overflow-auto ${!item.description ? 'd-none' : ''}">
+            <h6 class="card-title">
+                ${item.taxon.preferred_common_name}
+                <br/>
+                <small class="text-body-secondary">(${item.taxon.name})</small>
+            </h6>
+            <div class="popup-description overflow-auto pt-2 ${!item.description ? 'd-none' : ''}">
                 <h6 class="card-subtitle mb-2 text-body-secondary">
                     ${item.description || ''}
                 </h6>
@@ -510,10 +514,10 @@ function openPopup(target, id) {
 function createListItem(item) {
     let thumbnail;
     if (item.observation_photos.length) {
-        thumbnail = `<img class="img-thumbnail rounded" src="${item.observation_photos[0].photo.url}" style="height: 75px;">`;
+        thumbnail = `<img class="img-fluid rounded float-start" src="${item.observation_photos[0].photo.url}">`;
     }
     else {
-        thumbnail = '<img class="img-thumbnail rounded" src="./assets/sound.png" style="height: 75px;">';
+        thumbnail = '<img class="img-fluid rounded float-start" src="./assets/sound.png">';
     }
 
     let name;
@@ -531,12 +535,14 @@ function createListItem(item) {
     }
 
     const specieItem = `<div>
-        <a href="#" id="item_${item.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+        <a href="#" id="item_${item.id}" class="list-group-item list-group-item-action d-flex justify-content-start align-items-center"
             onclick="openPopup(this, ${item.id})"
         >
             ${thumbnail}
             <h6 class="text-wrap ms-2" style="width: 12rem;">
                 ${item.taxon.preferred_common_name || item.taxon.english_common_name}
+                <br/>
+                <small class="text-body-secondary">(${item.taxon.name})</small>
             </h6>
         </a>
     </div>`;
@@ -735,7 +741,7 @@ function onPopupOpen(event) {
     item.focus();
 
     const latLng = popup.getLatLng();
-    const newLat = latLng.lat + 0.0010;
+    const newLat = latLng.lat + 0.0005;
     const newLatLng = [newLat, latLng.lng];
 
     map.setView(newLatLng);
