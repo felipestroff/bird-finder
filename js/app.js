@@ -18,10 +18,11 @@ function createMap() {
     map.on('draw:created', onDrawCreated);
     map.on('draw:deleted', onDrawDeleted);
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: `&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors | ${translate('Developed and maintained by')} <a href="https://www.linkedin.com/in/felipestroff" target="_blank">Felipe Stroff</a>`
-    })
-    .addTo(map);
+    const layers = createLayers();
+    const defaultLayer = layers[config.map.defaultLayer];
+    if (defaultLayer) {
+        defaultLayer.addTo(map);
+    }
 
     drawLayer = L.featureGroup().addTo(map);
 
@@ -36,7 +37,24 @@ function createMap() {
         createLangControl();
         createHelpControl();
         createSearchControl();
+        createLayerControl(layers);
     });
+}
+
+function createLayers() {
+    return {
+        'OSM': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }),
+        'Satellite': L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${config.app.mapBox_token}`, {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/satellite-v9',
+            tileSize: 512,
+            zoomOffset: -1
+        })
+    };
 }
 
 function createLocationControl() {
@@ -129,7 +147,7 @@ function createLangControl() {
             const container = L.DomUtil.create('div', 'control leaflet-control');
             container.innerHTML = `
                 <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${lang}" onclick="changeAppLang()">
-                    <img src="./src/assets/images/${lang}.png" alt="${lang}" style="height: 14px;">
+                    <img src="./assets/${lang}.png" alt="${lang}" style="height: 14px;">
                 </button>
             `;
             return container;
@@ -197,7 +215,7 @@ function createSearchControl() {
             container.innerHTML = `
                 <div class="d-flex justify-content-end">
                     <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#listControlContent" title="${translate('Search')}" aria-label="${translate('Search')}" aria-expanded="false" aria-controls="listControlContent">
-                        <img src="src/assets/images/binoculars.png" alt="Pesquisar" style="height: 2rem;">
+                        <img src="assets/binoculars.png" alt="Pesquisar" style="height: 2rem;">
                     </button>
                 </div>
                 <div id="listControlContent" class="control-content collapse show collapse-horizontal bg-white rounded">
@@ -257,6 +275,10 @@ function createSearchControl() {
         position: 'topright'
     })
     .addTo(map);
+}
+
+function createLayerControl(layers) {
+    this.controls.layer = L.control.layers(layers, null, { position: 'bottomright' }).addTo(map);
 }
 
 async function search() {
@@ -432,7 +454,7 @@ function setPopupContent(item) {
             </div>
             <p class="card-text">${item.place_guess}</p>
             <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
-                <img class="img-thumbnail rounded" src="${item.user.icon || './src/assets/icons/icon-192x192.png'}" style="height: 48px;">
+                <img class="img-thumbnail rounded" src="${item.user.icon || './assets/icon-192x192.png'}" style="height: 48px;">
                 <span class="text-wrap ms-2" style="width: 12rem;">
                     ${translate('Registered by')} ${item.user.name || item.user.login}
                 </span>
@@ -491,7 +513,7 @@ function createListItem(item) {
         thumbnail = `<img class="img-thumbnail rounded" src="${item.observation_photos[0].photo.url}" style="height: 75px;">`;
     }
     else {
-        thumbnail = '<img class="img-thumbnail rounded" src="./src/assets/images/sound.png" style="height: 75px;">';
+        thumbnail = '<img class="img-thumbnail rounded" src="./assets/sound.png" style="height: 75px;">';
     }
 
     let name;

@@ -92,13 +92,13 @@ function getUrlLang() {
 
 // Function to fetch the configuration from 'config.json'
 async function fetchConfig() {
-    const response = await fetch('./config.json');
+    const response = await fetch('./config/config.json');
     return response.json();
 }
 
 // Function to fetch the language configuration from the 'nls' directory
 async function fetchLangConfig(lang) {
-    const response = await fetch(`./src/nls/${lang}.json`);
+    const response = await fetch(`./locales/${lang}.json`);
     return response.json();
 }
 

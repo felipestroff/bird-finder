@@ -1,11 +1,13 @@
 {
     "app": {
-        "defaultLang": "pt-BR"
+        "defaultLang": "pt-BR",
+        "mapBox_token": "pk.eyJ1IjoiZnN0cm9mZiIsImEiOiJjbGQyN2Uzc3kwMHVnM3BwMHA0MHZndm95In0.A9b4v-gS_jWQT0cADitQ9A"
     },
     "map": {
         "latLng": [-13.7028062, -69.6972495],
         "zoom": 2,
-        "minZoom": 2
+        "minZoom": 2,
+        "defaultLayer": "OSM"
     },
     "iNaturalist": {
         "apiUrl": "https://api.inaturalist.org/v1",

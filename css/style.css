@@ -1,8 +1,8 @@
-@import url('../../lib/bootstrap/bootstrap.css');
-@import url('../../lib/leaflet/leaflet.css');
-@import url('../../lib/leaflet-draw/leaflet.draw.css');
-@import url('../../lib/leaflet-markercluster/MarkerCluster.css');
-@import url('../../lib/leaflet-markercluster/MarkerCluster.Default.css');
+@import url('../libs/bootstrap/bootstrap.css');
+@import url('../libs/leaflet/leaflet.css');
+@import url('../libs/leaflet-draw/leaflet.draw.css');
+@import url('../libs/leaflet-markercluster/MarkerCluster.css');
+@import url('../libs/leaflet-markercluster/MarkerCluster.Default.css');
 
 body {
     padding: 0;
