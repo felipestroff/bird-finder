@@ -26,10 +26,7 @@ function createMap() {
 
     drawLayer = L.featureGroup().addTo(map);
 
-    markersLayer = L.markerClusterGroup({
-        retainPopup: true
-    })
-    .addTo(map);
+    markersLayer = L.markerClusterGroup().addTo(map);
 
     map.whenReady(() => {
         createLocationControl();
@@ -369,10 +366,27 @@ function createMarker(item) {
     const latLng = item.geojson.coordinates.reverse();
     const popupContent = setPopupContent(item);
 
+    let photo = '';
+    if (item.observation_photos && item.observation_photos.length) {
+        const photoUrl = item.observation_photos[0].photo.url;
+        photo = `<img src="${photoUrl}" />`;
+    }
+
     const marker = L.marker(latLng, {
         id: item.id
     })
-    .bindPopup(popupContent)
+    .bindTooltip(`
+        <div class="d-flex flex-column align-items-center">
+            <div>${item.taxon.preferred_common_name}</div>
+            ${photo}
+        </div>
+    `)
+    .addTo(markersLayer)
+    .openTooltip()
+    .bindPopup(popupContent, {
+        closeOnClick: false,
+        closeOnEscapeKey: false
+    })
     .addTo(markersLayer);
 
     marker.on('popupopen', onPopupOpen);
@@ -396,7 +410,9 @@ function setPopupContent(item) {
             const photoUrl = photoItem.photo.url.replace('square', 'large');
 
             carouselItems += `<div class="carousel-item ${photoIndex === 0 ? 'active' : ''}">
-                <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
+                <a href="#" onclick="openImageModal('${item.taxon.preferred_common_name}', '${photoUrl}')"> 
+                    <img src="${photoUrl}" class="d-block w-auto mx-auto" style="max-height: 10rem;">
+                </a>
             </div>`;
         }
     }
@@ -458,7 +474,7 @@ function setPopupContent(item) {
             </div>
             <p class="card-text">${item.place_guess}</p>
             <a href="https://www.inaturalist.org/people/${item.user.id}" target="_blank" class="card-link d-flex justify-content-between align-items-center">
-                <img class="img-thumbnail rounded" src="${item.user.icon || './assets/icon-192x192.png'}" style="height: 48px;">
+                <img class="img-thumbnail rounded" src="${item.user.icon || 'https://www.inaturalist.org/attachment_defaults/users/icons/defaults/thumb.png'}">
                 <span class="text-wrap ms-2" style="width: 12rem;">
                     ${translate('Registered by')} ${item.user.name || item.user.login}
                 </span>
@@ -631,6 +647,36 @@ function hideCollapses() {
     }
 }
 
+function openImageModal(title, imageUrl) {
+    const oldModal = document.getElementById('imageModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    const modalContentHtml = `<div id="imageModal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${title}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img class="img-fluid" src="${imageUrl}" />
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    const modalContent = document.createElement('div');
+    modalContent.innerHTML = modalContentHtml;
+
+    const modalElement = modalContent.firstChild;
+    document.body.appendChild(modalElement);
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
 // Events
 // Map
 function onLocationFound(event) {
@@ -642,9 +688,9 @@ function onLocationFound(event) {
             popupAnchor: [9, 0]
         })
     })
-    .bindPopup(`<center>${translate('You')}</center>`)
+    .bindTooltip(translate('You'))
     .addTo(drawLayer)
-    .openPopup();
+    .openTooltip();
 
     const radiusInKm = parseInt(bufferRange.value);
     const radiusInM = radiusInKm * 1000;
@@ -741,7 +787,7 @@ function onPopupOpen(event) {
     item.focus();
 
     const latLng = popup.getLatLng();
-    const newLat = latLng.lat + 0.0005;
+    const newLat = latLng.lat + 0.0010;
     const newLatLng = [newLat, latLng.lng];
 
     map.setView(newLatLng);
