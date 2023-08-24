@@ -92,9 +92,6 @@ export default class SearchControl {
                 <div class="d-flex justify-content-center align-items-center form-text">
                     Powered by <a href="https://api.inaturalist.org/v1/docs" target="_blank" class="ms-1">iNaturalist API</a>
                 </div>
-                <div id="searchLoader" class="loader d-flex justify-content-center d-none">
-                    <div class="spinner-border text-success" role="status"></div>
-                </div>
             </div>
         `;
     }
@@ -132,7 +129,7 @@ export default class SearchControl {
     
             this.app.hideCollapses();
             this.app.showCollapse(this.container.querySelector('#searchContent'));
-            this.toggleSearchLoader(true);
+            this.showSearchLoader();
     
             const data = await this.querySpecies(term, this.app.bbox);
             if (data) {
@@ -189,9 +186,22 @@ export default class SearchControl {
 
             const specieItems = this.container.querySelectorAll('.specie-item');
             for (const specieItem of specieItems) {
-                specieItem.addEventListener('click', (e) => {
+                specieItem.addEventListener('click', () => {
                     this.app.openPopup(specieItem);
                 }, false);
+
+                const thumbnailItems = specieItem.querySelectorAll('.thumbnail-container');
+                for (const thumbnailItem of thumbnailItems) {
+                    const img = thumbnailItem.querySelector('img');
+                    const spinner = thumbnailItem.querySelector('.spinner-border');
+
+                    img.addEventListener('load', () => {
+                        if (spinner) {
+                            spinner.classList.add('d-none');
+                        }
+                        img.classList.remove('d-none'); // Mostrar a imagem
+                    })
+                }
             }
     
             const totalResults = data.total_results;
@@ -211,19 +221,27 @@ export default class SearchControl {
         else {
             this.setNoResultsFound();
         }
-    
-        this.toggleSearchLoader(false);
     }
 
     createListItem(item) {
-        let thumbnail;
+        let thumbnailSrc;
         if (item.observation_photos.length) {
-            thumbnail = `<img class="img-fluid rounded float-start" src="${item.observation_photos[0].photo.url}">`;
+            thumbnailSrc = item.observation_photos[0].photo.url;
         }
         else {
-            thumbnail = '<img class="img-fluid rounded float-start" src="./assets/sound.png">';
+            thumbnailSrc = './assets/sound.png';
         }
-    
+        
+        // Thumbnail markup with Bootstrap spinner
+        const thumbnail = `
+            <div class="thumbnail-container position-relative">
+                <img class="img-fluid rounded float-start d-none" src="${thumbnailSrc}">
+                <div class="spinner-border text-primary spinner-position" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+
         let name;
         if (item.taxon.preferred_common_name) {
             name = item.taxon.preferred_common_name;
@@ -237,18 +255,22 @@ export default class SearchControl {
         else {
             name = this.langControl.translate('Unnamed');
         }
-    
-        const specieItem = `<div>
-            <a href="#" id="item_${item.id}" class="specie-item list-group-item list-group-item-action d-flex justify-content-start align-items-center">
-                ${thumbnail}
-                <h6 class="text-wrap ms-2" style="width: 12rem;">
-                    ${item.taxon.preferred_common_name || item.taxon.english_common_name}
-                    <br/>
-                    <small class="text-body-secondary">(${item.taxon.name})</small>
-                </h6>
-            </a>
-        </div>`;
-        
+
+        const specieItem = `
+            <div>
+                <a href="#" id="item_${item.id}" class="specie-item list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div class="ms-2 me-auto">    
+                        ${thumbnail}
+                    </div>
+                    <h6 class="text-wrap ms-2" style="width: 12rem;">
+                        ${name}
+                        <br/>
+                        <small class="text-body-secondary">(${item.taxon.name})</small>
+                    </h6>
+                </a>
+            </div>
+        `;
+
         return specieItem;
     }
 
@@ -297,15 +319,12 @@ export default class SearchControl {
         this.container.querySelector('#searchPagination').innerHTML = '';
     }
 
-    toggleSearchLoader(bool) {
-        const loader = this.container.querySelector('#searchLoader');
-
-        if (bool) {
-            loader.classList.remove('d-none');
-        }
-        else {
-            loader.classList.add('d-none');
-        }
+    showSearchLoader() {
+        document.querySelector('#searchItems').innerHTML = `
+            <div class="p-3 text-center">
+                <p>${this.langControl.translate('Loading...')}.</p>
+            </div>
+        `;
     }
 
     onSearchInputChange() {

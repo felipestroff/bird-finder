@@ -293,7 +293,7 @@ export default class App {
             const nameLink = item.taxon.preferred_common_name.replaceAll(' ', '_');
             allaboutbirdsLink.href = `https://www.allaboutbirds.org/guide/${nameLink}`;
             allaboutbirdsLink.target = "_blank";
-            allaboutbirdsLink.className = 'btn btn-light btn-sm text-dark';
+            allaboutbirdsLink.className = 'btn btn-outline-secondary btn-sm text-dark';
             allaboutbirdsLink.textContent = 'All About Birds';
             linkContainer.appendChild(allaboutbirdsLink);
         }
@@ -461,8 +461,6 @@ export default class App {
         this.bbox = null;
     
         this.clearAll();
-    
-        this.controls.searchControl.toggleSearchLoader(false);
     }
 
     onPopupOpen(event) {
