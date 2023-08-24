@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
+    <!-- Meta tags -->
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1" />
     <meta name="description" content="Aplicativo de identificação de espécies de aves">
     <meta name="theme-color" content="#B7E263"/>
 
@@ -17,19 +18,21 @@
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json" />
 
-    <!-- CSS -->
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- JavaScript Libraries -->
+    <script src="libs/bootstrap/bootstrap.bundle.js"></script>
+    <script src="libs/leaflet/leaflet.js"></script>
+    <script src="libs/leaflet-draw/leaflet.draw.js"></script>
+    <script src="libs/leaflet-markercluster/leaflet.markercluster.js"></script>
   </head>
   <body>
     <div id="app" class="position-absolute">
       <div id="map"></div>
     </div>
 
-    <!-- Scripts -->
-    <script src="libs/bootstrap/bootstrap.bundle.js"></script>
-    <script src="libs/leaflet/leaflet.js"></script>
-    <script src="libs/leaflet-draw/leaflet.draw.js"></script>
-    <script src="libs/leaflet-markercluster/leaflet.markercluster.js"></script>
+    <!-- Main JavaScript -->
     <script src="js/main.js"></script>
     <script src="js/app.js"></script>
   </body>
