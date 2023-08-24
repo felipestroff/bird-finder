@@ -1,147 +1,158 @@
-// Global variables
+/**
+ * Bird Finder Application Main Script
+ *
+ * This script initializes the application, sets up Service Workers, 
+ * and handles the application's language and installation functionality.
+ * 
+ * @see https://developers.google.com/codelabs/pwa-training/pwa03--going-offline
+ */
+
+// ================================
+// 1. Global variables
+// ================================
+
+// Flag to check if the app is installed.
 let appInstalled = false;
-let config; // Variable to store the application configuration
-let lang; // Variable to store the current language code
-let langConfig; // Variable to store the language configuration
-const isMobile = L.Browser.mobile; // A constant flag to check if the device is mobile or not
 
-// Unregister old service worker
-navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => {
-        registration.unregister();
-    });
-});
+// Variable to store the application configuration.
+let config;
 
-// Register the service worker
-// https://developers.google.com/codelabs/pwa-training/pwa03--going-offline
+// Variable to store the current language code.
+let lang;
+
+// Variable to store the language configuration.
+let langConfig;
+
+// Constant flag to check if the device is mobile or not.
+const isMobile = L.Browser.mobile;
+
+// ================================
+// 2. Service Worker Registration
+// ================================
+
+/**
+ * Logging Constants: These constants provide a unified format for log messages, 
+ * making it easier to identify and manage logs related to the Service Worker.
+ */
+const SW_LOG_PREFIX = '[Service Worker]';
+const SW_LOG_REGISTERED = `${SW_LOG_PREFIX} Registered:`;
+const SW_LOG_REGISTRATION_FAILED = `${SW_LOG_PREFIX} Registration failed:`;
+
+// Service Worker URL.
 const swURL = './sw.js';
+
 if ('serviceWorker' in navigator) {
-    // Wait for the 'load' event to not block other work
-    window.addEventListener('load', async () => {
-        // Try to register the service worker.
-        try {
-            navigator.serviceWorker.register(swURL).then(reg => {
-                console.log('[sw] Registered!', reg);
-            });
-        }
-        catch (err) {
-            console.log('[sw] Registration failed: ', err);
-        }
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register(swURL)
+            .then(reg => console.log(SW_LOG_REGISTERED, reg))
+            .catch(err => console.log(SW_LOG_REGISTRATION_FAILED, err));
     });
 }
 
+// ================================
+// 3. Installation Event Handlers
+// ================================
+
+const APP_LOG_PREFIX = '[App]';
+const APP_LOG_BEFORE_INSTALL = `${APP_LOG_PREFIX} before install:`;
+const APP_LOG_INSTALLED = `${APP_LOG_PREFIX} installed:`;
+const APP_LOG_DISPLAY_MODE_STANDALONE = `${APP_LOG_PREFIX} Display-mode is standalone.`;
+const APP_LOG_BROWSER_NOT_SUPPORT = `${APP_LOG_PREFIX} Your browser does not support the matchMedia API.`;
+const APP_LOG_INSTALL_BUTTON_CLICKED = `${APP_LOG_PREFIX} Install button clicked.`;
+const APP_LOG_USER_CHOICE = `${APP_LOG_PREFIX} userChoice:`;
+
 window.addEventListener('beforeinstallprompt', (event) => {
-    // Prevent the mini-infobar from appearing on mobile.
     event.preventDefault();
-    console.log('[app] beforeinstallprompt', event);
-    // Stash the event so it can be triggered later.
+    console.log(APP_LOG_BEFORE_INSTALL, event);
     window.deferredPrompt = event;
 });
 
 window.addEventListener('appinstalled', (event) => {
-    console.log('[app] appinstalled', event);
-    // Clear the deferredPrompt so it can be garbage collected
+    console.log(APP_LOG_INSTALLED, event);
     window.deferredPrompt = null;
 });
 
 if ('matchMedia' in window) {
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        console.log('[navigator] display-mode is standalone');
-
+        console.log(APP_LOG_DISPLAY_MODE_STANDALONE);
         appInstalled = true;
-    }
-    else {
-        appInstalled = false;
     }
 }
 else {
-    console.log('[app] Your browser does not support the matchMedia API.');
+    console.log(APP_LOG_BROWSER_NOT_SUPPORT);
 }
 
-// Function to initialize the application
+// ================================
+// 4. Application Initialization
+// ================================
+
+// Initialize the application.
 async function init() {
     try {
-        // Fetch the configuration from 'config.json' and store it in the 'config' variable
         config = await fetchConfig();
-
-        // Get the language from the URL parameters or use the default language from the configuration
         lang = getUrlLang() || config.app.defaultLang;
-
-        // Fetch the language configuration from the 'nls' directory based on the language code
         if (lang !== 'en-US') {
             langConfig = await fetchLangConfig(lang);
         }
-
-        // Set the document's language attribute to the selected language
         document.documentElement.lang = lang;
-
-        // Call the function to create the map and other controls
         createMap();
     }
     catch (error) {
-        // If there is an error during initialization, log it to the console
         console.error('Error during initialization:', error);
     }
 }
 
-// Function to get the language from the URL parameters
-function getUrlLang() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('lang');
-}
-
-// Function to fetch the configuration from 'config.json'
+// Fetch the application configuration.
 async function fetchConfig() {
     const response = await fetch('./config/config.json');
     return response.json();
 }
 
-// Function to fetch the language configuration from the 'nls' directory
+// Get the language from URL parameters.
+function getUrlLang() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('lang');
+}
+
+// Fetch the language configuration.
 async function fetchLangConfig(lang) {
     const response = await fetch(`./locales/${lang}.json`);
     return response.json();
 }
 
-// Function to translate a string using the language configuration
+// ================================
+// 5. Language Handling
+// ================================
+
+// Translate a string using the language configuration.
 function translate(string) {
-    // Return the translated string if available in the language configuration, otherwise return the original string
     return langConfig && langConfig[string] || string;
 }
 
-// Function to change the application language
+// Change the application language.
 function changeAppLang() {
-    // Toggle between 'pt-BR' and 'en-US' languages
     const newLang = lang === 'pt-BR' ? 'en-US' : 'pt-BR';
-
-    // Update the 'lang' URL parameter with the new language
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.delete('lang');
     urlParams.append('lang', newLang);
-
-    // Create the new URL with the updated language parameter
     const newUrl = `${window.location.origin}${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
-
-    // Replace the current URL with the new one to change the language
     window.location.replace(newUrl);
 }
 
-// Install app
+// ================================
+// 6. Installation Handling
+// ================================
+
+// Install the application.
 async function installApp() {
-    console.log('[app] installBtn-clicked');
+    console.log(APP_LOG_INSTALL_BUTTON_CLICKED);
     const promptEvent = window.deferredPrompt;
-    if (!promptEvent) {
-      // The deferred prompt isn't available.
-      return;
-    }
-    // Show the install prompt.
+    if (!promptEvent) return;
     promptEvent.prompt();
-    // Log the result
     const result = await promptEvent.userChoice;
-    console.log('[app] userChoice', result);
-    // Reset the deferred prompt variable, since
-    // prompt() can only be called once.
+    console.log(APP_LOG_USER_CHOICE, result);
     window.deferredPrompt = null;
 }
 
-// Call the 'init' function to initialize the application when the script is loaded
+// Trigger the initialization function upon script load.
 init();
