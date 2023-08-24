@@ -22,8 +22,15 @@ const coreResources = [
 
 // JavaScript Resources: Application logic.
 const jsResources = [
-  './js/main.js',
+  './js/utils/controlUtils.js',
+  './js/controls/langControl.js',
+  './js/controls/helpControl.js',
+  './js/controls/locationControl.js',
+  './js/controls/drawControl.js',
+  './js/controls/layersControl.js',
+  './js/controls/searchControl.js',
   './js/app.js',
+  './js/main.js'
 ];
 
 // CSS Resources: Styling information.
