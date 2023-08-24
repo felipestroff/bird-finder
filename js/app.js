@@ -375,19 +375,21 @@ function createMarker(item) {
     const marker = L.marker(latLng, {
         id: item.id
     })
-    .bindTooltip(`
-        <div class="d-flex flex-column align-items-center">
-            <div>${item.taxon.preferred_common_name}</div>
-            ${photo}
-        </div>
-    `)
-    .addTo(markersLayer)
-    .openTooltip()
     .bindPopup(popupContent, {
         closeOnClick: false,
         closeOnEscapeKey: false
     })
     .addTo(markersLayer);
+
+    if (!isMobile) {
+        marker.bindTooltip(`
+            <div class="d-flex flex-column align-items-center">
+                <div>${item.taxon.preferred_common_name}</div>
+                ${photo}
+            </div>
+        `)
+        .addTo(markersLayer)
+    }
 
     marker.on('popupopen', onPopupOpen);
     marker.on('popupclose', onPopupClose);
@@ -654,7 +656,7 @@ function openImageModal(title, imageUrl) {
     }
 
     const modalContentHtml = `<div id="imageModal" class="modal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">${title}</h5>
