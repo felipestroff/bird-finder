@@ -33,7 +33,7 @@ export default class HelpControl {
 
         const installButton = this.container.querySelector('#installAppBtn');
         if (installButton) {
-            installButton.addEventListener('click', this._installApp.bind(this));
+            installButton.addEventListener('click', this._installApp);
         }
     }
 
