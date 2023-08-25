@@ -82,7 +82,7 @@ export default class App {
             'OSM': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }),
-            'Satellite': L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${this.config.app.mapBox_token}`, {
+            'Satellite': L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}@2x?access_token=${this.config.app.mapBox_token}`, {
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
                 id: 'mapbox/satellite-v9',
                 tileSize: 512,
@@ -265,6 +265,7 @@ export default class App {
         itemImg.src = photoUrl;
         itemImg.className = 'd-block w-auto mx-auto';
         itemImg.style.maxHeight = '10rem';
+        itemImg.style.cursor = 'zoom-in';
     
         const itemAction = document.createElement('a');
         itemAction.href = '#';

@@ -97,7 +97,7 @@ export default class LangControl {
     _getControlHTML() {
         return `
             <button id="langButton" class="btn btn-light btn-sm border-dark-subtle" type="button" title="${this.lang}">
-                <img src="./assets/${this.lang}.png" alt="${this.lang}" style="height: 14px;">
+                <img src="./assets/${this.lang}.png" alt="${this.lang}" width="14" height="14">
             </button>
         `;
     }
