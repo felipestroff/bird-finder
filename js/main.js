@@ -20,25 +20,13 @@ const SW_LOG_REGISTRATION_FAILED = `${SW_LOG_PREFIX} Registration failed:`;
 // Service Worker URL.
 const swURL = './sw.js';
 
-// Unregister old service worker
-navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => {
-        registration.unregister();
-    });
-});
+let appInstalled = false;
 
 if ('serviceWorker' in navigator) {
-    // Wait for the 'load' event to not block other work
-    window.addEventListener('load', async () => {
-        // Try to register the service worker.
-        try {
-            navigator.serviceWorker.register(swURL).then(reg => {
-                console.log(SW_LOG_REGISTERED, reg);
-            });
-        }
-        catch (err) {
-            console.log(SW_LOG_REGISTRATION_FAILED, err);
-        }
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register(swURL)
+            .then(reg => console.log(SW_LOG_REGISTERED, reg))
+            .catch(err => console.log(SW_LOG_REGISTRATION_FAILED, err));
     });
 }
 
@@ -49,23 +37,20 @@ const APP_LOG_DISPLAY_MODE_STANDALONE = `${APP_LOG_PREFIX} Display-mode is stand
 const APP_LOG_BROWSER_NOT_SUPPORT = `${APP_LOG_PREFIX} Your browser does not support the matchMedia API.`;
 
 window.addEventListener('beforeinstallprompt', (event) => {
-    // Prevent the mini-infobar from appearing on mobile.
     event.preventDefault();
     console.log(APP_LOG_BEFORE_INSTALL, event);
-    // Stash the event so it can be triggered later.
     window.deferredPrompt = event;
 });
 
 window.addEventListener('appinstalled', (event) => {
     console.log(APP_LOG_INSTALLED, event);
-    // Clear the deferredPrompt so it can be garbage collected
     window.deferredPrompt = null;
 });
 
 if ('matchMedia' in window) {
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
         console.log(APP_LOG_DISPLAY_MODE_STANDALONE);
-        config.app.installed = true;
+        appInstalled = true;
     }
 }
 else {
@@ -75,6 +60,7 @@ else {
 async function init() {
     try {
         const config = await fetchConfig();
+        config.app.installed = appInstalled;
 
         startApp(config);
     }
