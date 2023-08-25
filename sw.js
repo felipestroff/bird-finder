@@ -10,7 +10,7 @@
  */
 
 // Cache Versioning
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `bird-finder-${CACHE_VERSION}`;
 
 // Core Resources: Essential for the functioning of the app.
