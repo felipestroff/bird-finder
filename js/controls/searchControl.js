@@ -156,6 +156,7 @@ export default class SearchControl {
     _resetAppFilters() {
         this.app.bbox = null;
         this.app.clearAll();
+        this.app.clearDrawLayers();
     }
 
     /**
