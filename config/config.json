@@ -18,7 +18,8 @@
             "verifiable": true,
             "quality_grade": "research",
             "has": ["geo", "photos"],
-            "per_page": 30
-        }
+            "per_page": 100
+        },
+        "per_page_options": [10, 50, 100]
     }
 }

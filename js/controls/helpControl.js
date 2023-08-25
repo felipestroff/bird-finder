@@ -1,52 +1,92 @@
+/**
+ * HelpControl class: Provides utility methods for creating and managing a custom help control on a map.
+ */
 export default class HelpControl {
+    /**
+     * Constructor: Initializes the HelpControl instance.
+     * 
+     * @param {Object} app - The main application object.
+     */
     constructor(app) {
         this.app = app;
-        this.config = app.config;
+        this.config = app.config.app;
         this.map = app.map;
         this.langControl = app.controls.langControl;
-        this.controlUtils = app.controlUtils;
+        this.mapUtils = app.mapUtils;
     }
 
     /**
      * Creates a custom control and adds it to the map.
      */
     createControl() {
-        const Control = this.createControlClass();
+        const Control = this._createControlClass();
         new Control({ position: 'bottomleft' }).addTo(this.map);
     }
 
     /**
-     * Creates a custom Leaflet control class for location functionalities.
-     * 
-     * @returns {L.Control} A Leaflet control class for location.
+     * Binds the necessary events to the location control container.
+     * @private
      */
-    createControlClass() {
+    _bindControlEvents() {
+        L.DomEvent.on(this.container, 'mouseover touchstart', this.mapUtils.onControlOver.bind(this.mapUtils));
+        L.DomEvent.on(this.container, 'mouseout touchend', this.mapUtils.onControlOut.bind(this.mapUtils));
+
+        const installButton = this.container.querySelector('#installAppBtn');
+        if (installButton) {
+            installButton.addEventListener('click', this._installApp.bind(this));
+        }
+    }
+
+    /**
+     * Install the application.
+     * @private
+     */
+    async _installApp() {
+        console.log('[App] Install button clicked.');
+        const promptEvent = window.deferredPrompt;
+        if (!promptEvent) return;
+        
+        promptEvent.prompt();
+        const result = await promptEvent.userChoice;
+        console.log('[App] userChoice:', result);
+        window.deferredPrompt = null;
+    }
+
+    /**
+     * Creates a custom Leaflet control class for the help functionalities.
+     * 
+     * @returns {L.Control} A Leaflet control class.
+     * @private
+     */
+    _createControlClass() {
         return L.Control.extend({
             onAdd: () => {
-                this.container = this.createControlContainer();
-                this.bindControlEvents();
+                this.container = this._createControlContainer();
+                this._bindControlEvents();
                 return this.container;
             }
         });
     }
 
     /**
-     * Creates a container for the location control with the necessary HTML elements.
+     * Creates a container for the help control with the necessary HTML elements.
      * 
-     * @returns {HTMLElement} The location control container element.
+     * @returns {HTMLElement} The help control container element.
+     * @private
      */
-    createControlContainer() {
+    _createControlContainer() {
         const container = L.DomUtil.create('div', 'control leaflet-control');
-        container.innerHTML = this.getControlHTML();
+        container.innerHTML = this._getControlHTML();
         return container;
     }
 
     /**
-     * Returns the HTML string for the location control's content.
+     * Returns the HTML string for the help control's content.
      * 
-     * @returns {string} The location control's HTML content.
+     * @returns {string} The help control's HTML content.
+     * @private
      */
-    getControlHTML() {
+    _getControlHTML() {
         return `
             <button class="btn btn-light btn-sm border-dark-subtle" type="button" title="${this.langControl.translate('Help')}" data-bs-toggle="collapse" data-bs-target="#helpControlContent" aria-expanded="false" aria-controls="helpControlContent">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
@@ -66,31 +106,12 @@ export default class HelpControl {
                     </li>
                 </ul>
 
-                <div class="${!this.config.app.installed ? 'd-grid gap-2' : 'd-none'}">
+                <div class="${!this.config.installed ? 'd-grid gap-2' : 'd-none'}">
                     <button id="installAppBtn" class="btn btn-success btn-sm" type="button">
                         ${this.langControl.translate('Install App')}
                     </button>
                 </div>
             </div>
         `;
-    }
-
-    // Binds the necessary events (mouseover, mouseout, touchstart, touchend) to the location control container.
-    bindControlEvents() {
-        L.DomEvent.on(this.container, 'mouseover touchstart', this.controlUtils.onControlOver.bind(this));
-        L.DomEvent.on(this.container, 'mouseout touchend', this.controlUtils.onControlOut.bind(this));
-
-        this.container.querySelector('#installAppBtn').addEventListener('click', this.installApp);
-    }
-
-    // Install the application.
-    async installApp() {
-        console.log('[App] Install button clicked.');
-        const promptEvent = window.deferredPrompt;
-        if (!promptEvent) return;
-        promptEvent.prompt();
-        const result = await promptEvent.userChoice;
-        console.log('[App] userChoice:', result);
-        window.deferredPrompt = null;
     }
 }

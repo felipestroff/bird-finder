@@ -43,5 +43,9 @@
     "My Location": "Minha Localização",
     "No layers to delete": "Nenhuma camada para excluir",
     "Delete layers": "Excluir camadas",
-    "Loading...": "Carregando..."
+    "Loading...": "Carregando...",
+    "Showing": "Exibindo",
+    "of": "de",
+    "records": "registros",
+    "Records per page": "Registros por página"
 }

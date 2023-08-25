@@ -1,33 +1,65 @@
+/**
+ * Class representing a search control.
+ */
 export default class SearchControl {
+    /**
+     * Constructs an instance responsible for search controls and behaviors in the map application.
+     *
+     * @param {Object} app - The main application object containing configurations, utility methods, and state.
+     */
     constructor(app) {
+        // Assign properties from the application object
+        this._initializeProperties(app);
+
+        // Set the page number either from the URL or default to 1
+        this.page = this.urlUtils.getValueFromURLOrDefault('page', 1);
+
+        // Set the number of items per page either from the URL or from the default configuration
+        this.per_page = this.urlUtils.getValueFromURLOrDefault('per_page', this.config.params.per_page);
+    }
+
+    /**
+     * Initializes properties using values from the given application object.
+     *
+     * @param {Object} app - The main application object.
+     * @private
+     */
+    _initializeProperties(app) {
         this.app = app;
-        this.config = app.config;
+        this.config = app.config.iNaturalist;
         this.map = app.map;
         this.langControl = app.controls.langControl;
         this.drawLayer = app.layers.draw;
         this.markersLayer = app.layers.marker;
-        this.controlUtils = app.controlUtils;
-        this.page = 1;
+        this.urlUtils = app.urlUtils;
+        this.mapUtils = app.mapUtils;
+        this.domUtils = app.domUtils;
     }
 
     /**
      * Creates a custom control and adds it to the map.
+     * Initializes search if a query parameter 'q' is present in the URL.
      */
     createControl() {
-        const Control = this.createControlClass();
+        const Control = this._createControlClass();
         new Control({ position: 'topright' }).addTo(this.map);
+
+        if (this.urlUtils.checkParameterInURL('q')) {
+            const query = this.urlUtils.getURLParameterValue('q');
+            this.search(query);
+        }
     }
 
     /**
      * Creates a custom Leaflet control class for location functionalities.
-     * 
      * @returns {L.Control} A Leaflet control class for location.
+     * @private
      */
-    createControlClass() {
+    _createControlClass() {
         return L.Control.extend({
             onAdd: () => {
-                this.container = this.createControlContainer();
-                this.bindControlEvents();
+                this.container = this._createControlContainer();
+                this._bindControlEvents();
                 return this.container;
             }
         });
@@ -35,21 +67,21 @@ export default class SearchControl {
 
     /**
      * Creates a container for the location control with the necessary HTML elements.
-     * 
      * @returns {HTMLElement} The location control container element.
+     * @private
      */
-    createControlContainer() {
+    _createControlContainer() {
         const container = L.DomUtil.create('div', 'control leaflet-control');
-        container.innerHTML = this.getControlHTML();
+        container.innerHTML = this._getControlHTML();
         return container;
     }
 
     /**
-     * Returns the HTML string for the location control's content.
-     * 
+     * Generates the HTML content for the location control.
      * @returns {string} The location control's HTML content.
+     * @private
      */
-    getControlHTML() {
+    _getControlHTML() {
         return `
             <div class="d-flex justify-content-end">
                 <button class="btn btn-light btn-sm border-dark-subtle" type="button" data-bs-toggle="collapse" data-bs-target="#searchContent" title="${this.langControl.translate('Search')}" aria-label="${this.langControl.translate('Search')}" aria-expanded="false" aria-controls="searchContent">
@@ -64,9 +96,8 @@ export default class SearchControl {
                         </svg>
                     </button>
                     <button id="clearFiltersButton" class="btn btn-light btn-sm border-dark-subtle" type="button" title="${this.langControl.translate('Clear filters')}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                         </svg>
                     </button>
                 </div>
@@ -80,15 +111,13 @@ export default class SearchControl {
                         </button>
                     </div>
                 </form>
-                <div id="searchItems" class="list-group overflow-auto" style="max-height: 55vh;">
+                <div id="searchItems" class="list-group overflow-auto" style="max-height: 50vh;">
                     <div class="p-3">
                         <p>${this.langControl.translate('Enter above or select an area to begin your bird species search')}.</p>
                         <p>${this.langControl.translate('To do so, use the drawing tools located on the left side')}.</p>
                     </div>
                 </div>
-                <nav class="d-flex justify-content-center align-items-center mt-3">
-                    <ul id="searchPagination" class="pagination"></ul>
-                </nav>
+                <div id="searchPagination" class="d-row justify-content-center align-items-center mt-3"></div>
                 <div class="d-flex justify-content-center align-items-center form-text">
                     Powered by <a href="https://api.inaturalist.org/v1/docs" target="_blank" class="ms-1">iNaturalist API</a>
                 </div>
@@ -96,60 +125,154 @@ export default class SearchControl {
         `;
     }
 
-    // Binds the necessary events (mouseover, mouseout, touchstart, touchend) to the location control container
-    bindControlEvents() {
-        L.DomEvent.on(this.container, 'mouseover touchstart', this.controlUtils.onControlOver.bind(this));
-        L.DomEvent.on(this.container, 'mouseout touchend', this.controlUtils.onControlOut.bind(this));
+    /**
+     * Binds events to the location control container for interaction.
+     * @private
+     */
+    _bindControlEvents() {
+        L.DomEvent.on(this.container, 'mouseover touchstart', this.mapUtils.onControlOver.bind(this.mapUtils));
+        L.DomEvent.on(this.container, 'mouseout touchend', this.mapUtils.onControlOut.bind(this.mapUtils));
 
-        this.container.querySelector('#setDefaultExtentBtn').addEventListener('click', this.app.setDefaultExtent.bind(this));
-        this.container.querySelector('#clearFiltersButton').addEventListener('click', this.clearFilters.bind(this));
-        this.container.querySelector('#searchInput').addEventListener('change', this.onSearchInputChange.bind(this));
-        this.container.querySelector('#searchForm').addEventListener('submit', this.onSearchSubmit.bind(this));
+        this.container.querySelector('#setDefaultExtentBtn').addEventListener('click', this.mapUtils.setDefaultExtent.bind(this.mapUtils));
+        this.container.querySelector('#clearFiltersButton').addEventListener('click', this._clearFilters.bind(this));
+        this.container.querySelector('#searchInput').addEventListener('change', this.resetSearchPage.bind(this));
+        this.container.querySelector('#searchForm').addEventListener('submit', this._onSearchSubmit.bind(this));
     }
 
-    clearFilters() {
+    /**
+     * Clears the applied filters and resets the application to its initial state.
+     * @private
+     */
+    _clearFilters() {
+        this._resetAppFilters();
+        this.domUtils.setInputValue('#searchInput', '', this.container);
+        this._removeURLParameters();
+    }
+
+    /**
+     * Resets the bounding box and clears all associated application filters.
+     * @private
+     */
+    _resetAppFilters() {
         this.app.bbox = null;
         this.app.clearAll();
-        this.drawLayer.clearLayers();
-
-        this.container.querySelector('#searchInput').value = '';
     }
 
+    /**
+     * Removes specific parameters from the current URL without reloading the page.
+     * @private
+     */
+    _removeURLParameters() {
+        const parametersToRemove = ['q', 'page', 'per_page'];
+        parametersToRemove.forEach(param => this.urlUtils.removeURLParameterWithoutReload(param));
+    }
+
+    /**
+     * Clears the search items display.
+     */
     clearSearchItems() {
-        document.querySelector('#searchItems').innerHTML = `<div class="p-3">
+        this.container.querySelector('#searchItems').innerHTML = `<div class="p-3">
             <p>${this.langControl.translate('Enter above or select an area to begin your bird species search')}.</p>
             <p>${this.langControl.translate('To do so, use the drawing tools located on the left side')}.</p>
         </div>`;
     }
 
-    async search() {
-        const term = this.container.querySelector('#searchInput').value;
+    /**
+     * Prepares the environment for a search operation.
+     * @private
+     */
+    _prepareForSearch() {
+        this.app.clearAll();
+        this.domUtils.hideCollapses();
+        this.domUtils.showCollapse(this.container.querySelector('#searchContent'));
+        this._showSearchLoader();
+    }
+
+    /**
+     * Updates the URL with necessary parameters based on the search results and provided term.
+     * @private
+     * @param {object} data The search result data.
+     * @param {string} term The search term.
+     */
+    _updateURLParameters(data, term) {
+        if (term) {
+            this.urlUtils.addOrUpdateURLParameterWithoutReload('q', term);
+        }
+        if (data.page) {
+            this.page = data.page;
+            this.urlUtils.addOrUpdateURLParameterWithoutReload('page', this.page);
+        }
+        if (data.per_page) {
+            this.per_page = data.per_page;
+            this.urlUtils.addOrUpdateURLParameterWithoutReload('per_page', this.per_page);
+        }
+    }
+
+    /**
+     * Performs a search operation based on a query or the current value of the search input.
+     * @param {string} query The query string to search for.
+     */
+    async search(query) {
+        const term = query || this.domUtils.getInputValue('#searchInput', this.container);
         if (term || this.app.bbox) {
-            this.app.clearAll();
-    
-            this.app.hideCollapses();
-            this.app.showCollapse(this.container.querySelector('#searchContent'));
-            this.showSearchLoader();
-    
-            const data = await this.querySpecies(term, this.app.bbox);
+            this.domUtils.setInputValue('#searchInput', term, this.container);
+            this._prepareForSearch();
+            const data = await this._querySpecies(term, this.app.bbox);
+            
             if (data) {
-                this.createSpeciesList(data);
+                this._updateURLParameters(data, term);
+                this._createSpeciesList(data);
             }
         }
     }
 
-    async querySpecies(term, bbox) {
-        const params = this.config.iNaturalist.params;
+    /**
+     * Sends a request to the iNaturalist API and fetches species data based on search parameters.
+     * @param {string} term The search term.
+     * @param {Object} bbox The bounding box for search.
+     * @returns {Object} The response data.
+     * @private
+     */
+    async _querySpecies(term, bbox) {
+        const params = this._prepareSearchParams(term, bbox);
+        
+        const response = await fetch(`${this.config.apiUrl}/observations?` + new URLSearchParams(params));
+        return response.json();
+    }
+
+    /**
+     * Prepares search parameters for the iNaturalist API request.
+     * @param {string} term The search term.
+     * @param {Object} bbox The bounding box for search.
+     * @returns {Object} The prepared parameters.
+     * @private
+     */
+    _prepareSearchParams(term, bbox) {
+        this.config.params.per_page = this.per_page;
+
+        const params = {...this.config.params};
         params.page = this.page;
         params.locale = this.langControl.lang;
-    
+
         if (term) {
             params.q = term;
         }
         else {
             delete params.q;
         }
-    
+
+        this._setBoundingBoxParams(params, bbox);
+
+        return params;
+    }
+
+    /**
+     * Updates the provided search parameters with bounding box values or removes them if not provided.
+     * @param {Object} params The parameters to update.
+     * @param {Object} bbox The bounding box for search.
+     * @private
+     */
+    _setBoundingBoxParams(params, bbox) {
         if (bbox) {
             params.nelat = bbox._northEast.lat;
             params.nelng = bbox._northEast.lng;
@@ -162,176 +285,264 @@ export default class SearchControl {
             delete params.swlat;
             delete params.swlng;
         }
-    
-        const response = await fetch(`${this.config.iNaturalist.apiUrl}/observations?` + new URLSearchParams(params));
-        return response.json();
     }
 
-    createSpeciesList(data) {
-        this.page = data.page;
-    
+    /**
+     * Creates and displays a list of species based on the fetched data.
+     * @param {Object} data The fetched data from the iNaturalist API.
+     * @private
+     */
+    _createSpeciesList(data) {
         const results = data.results;
         if (results.length) {
-            let items = '';
-    
-            for (const item of results) {
-                if (item.geojson) {
-                    const specieItem = this.createListItem(item);
-                    items += specieItem;
-    
-                    this.app.createMarker(item);
-                }
-            }
-            this.container.querySelector('#searchItems').innerHTML = items;
-
-            const specieItems = this.container.querySelectorAll('.specie-item');
-            for (const specieItem of specieItems) {
-                specieItem.addEventListener('click', () => {
-                    this.app.openPopup(specieItem);
-                }, false);
-
-                const thumbnailItems = specieItem.querySelectorAll('.thumbnail-container');
-                for (const thumbnailItem of thumbnailItems) {
-                    const img = thumbnailItem.querySelector('img');
-                    const spinner = thumbnailItem.querySelector('.spinner-border');
-
-                    img.addEventListener('load', () => {
-                        if (spinner) {
-                            spinner.classList.add('d-none');
-                        }
-                        img.classList.remove('d-none'); // Mostrar a imagem
-                    })
-                }
-            }
-    
-            const totalResults = data.total_results;
-            
-            let totalPages = totalResults / this.config.iNaturalist.params.per_page;
-            if (totalPages % 1 !== 0) {
-                totalPages = parseInt(totalPages) + 1;
-            }
-    
-            if (totalResults > this.config.iNaturalist.params.per_page) {
-                this.createPagination(totalPages);
-            }
-    
-            const bounds = this.app.bbox || this.markersLayer.getBounds();
-            this.map.fitBounds(bounds);
+            this._populateSpeciesList(results);
+            this._setupListEventHandlers();
+            this._handlePagination(data.total_results);
+            this.mapUtils.fitMapBounds(this.app.bbox || this.markersLayer.getBounds());
         }
         else {
-            this.setNoResultsFound();
+            this._setNoResultsFound();
         }
     }
 
-    createListItem(item) {
-        let thumbnailSrc;
-        if (item.observation_photos.length) {
-            thumbnailSrc = item.observation_photos[0].photo.url;
+    /**
+     * Populates the species list container with the given species results.
+     * @param {Array} results The list of species results.
+     * @private
+     */
+    _populateSpeciesList(results) {
+        let items = '';
+        for (const item of results) {
+            if (item.geojson) {
+                items += this._createListItem(item);
+                this.app.createMarker(item);
+            }
         }
-        else {
-            thumbnailSrc = './assets/sound.png';
+        this.container.querySelector('#searchItems').innerHTML = items;
+    }
+
+    /**
+     * Sets up the event handlers for each species list item.
+     * @private
+     */
+    _setupListEventHandlers() {
+        const specieItems = this.container.querySelectorAll('.specie-item');
+        for (const specieItem of specieItems) {
+            specieItem.addEventListener('click', () => {
+                this.app.openPopup(specieItem);
+            });
+
+            this.domUtils.setupThumbnailEventHandlers(specieItem);
         }
+    }
+
+    /**
+     * Creates the pagination controls and updates the display based on the number of total results.
+     * @param {number} totalResults The total number of results.
+     * @private
+     */
+    _handlePagination(totalResults) {
+        let totalPages = Math.ceil(totalResults / this.per_page);
+        if (totalResults > this.per_page) {
+            this._createPagination(totalPages, totalResults);
+        }
+    }
+
+    /**
+     * Generates the HTML for a list item representing a species.
+     * @param {Object} item The data of the species.
+     * @returns {string} The HTML string for the species list item.
+     * @private
+     */
+    _createListItem(item) {
+        const thumbnailSrc = this.getThumbnailSource(item);
+        const thumbnailMarkup = this.domUtils.generateThumbnailMarkup(thumbnailSrc);
+        const speciesName = this.getSpeciesName(item);
         
-        // Thumbnail markup with Bootstrap spinner
-        const thumbnail = `
-            <div class="thumbnail-container position-relative">
-                <img class="img-fluid rounded float-start d-none" src="${thumbnailSrc}">
-                <div class="spinner-border text-primary spinner-position" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        `;
-
-        let name;
-        if (item.taxon.preferred_common_name) {
-            name = item.taxon.preferred_common_name;
-        }
-        else if (item.taxon.english_common_name) {
-            name = item.taxon.english_common_name;
-        }
-        else if (item.species_guess) {
-            name = item.species_guess;
-        }
-        else {
-            name = this.langControl.translate('Unnamed');
-        }
-
-        const specieItem = `
+        return `
             <div>
                 <a href="#" id="item_${item.id}" class="specie-item list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <div class="ms-2 me-auto">    
-                        ${thumbnail}
-                    </div>
+                    <div class="ms-2 me-auto">${thumbnailMarkup}</div>
                     <h6 class="text-wrap ms-2" style="width: 12rem;">
-                        ${name}
+                        ${speciesName}
                         <br/>
                         <small class="text-body-secondary">(${item.taxon.name})</small>
                     </h6>
                 </a>
             </div>
         `;
-
-        return specieItem;
     }
 
-    createPagination(totalPages) {
-        this.container.querySelector('#searchPagination').innerHTML = `
-            <li class="page-item ${this.page === 1 ? 'disabled' : ''}">
-                <a id="previousPage" class="page-link" href="#" onclick="paginate(${this.page - 1}, ${totalPages})">&laquo;</a>
-            </li>
-            <li class="page-item">
-                <input id="goToPage" class="form-control text-center" type="number" value="${this.page}" min="1" max="${totalPages}">
-            </li>
-            <li class="page-item ${this.page === totalPages ? 'disabled' : ''}">
-                <a id="nextPage" class="page-link" href="#">&raquo;</a>
-            </li>
-        `;
+    /**
+     * Returns the source of the thumbnail based on the species data.
+     * @param {Object} item The data of the species.
+     * @returns {string} The source of the thumbnail.
+     */
+    getThumbnailSource(item) {
+        return item.observation_photos.length 
+            ? item.observation_photos[0].photo.url 
+            : './assets/sound.png';
+    }
 
-        this.container.querySelector('#previousPage').addEventListener('click', (event) => {
-            this.paginate(this.page - 1, totalPages);
+    /**
+     * Determines the name of the species based on available data.
+     * @param {Object} item The data of the species.
+     * @returns {string} The name of the species.
+     */
+    getSpeciesName(item) {
+        if (item.taxon.preferred_common_name) {
+            return item.taxon.preferred_common_name;
+        }
+        else if (item.taxon.english_common_name) {
+            return item.taxon.english_common_name;
+        }
+        else if (item.species_guess) {
+            return item.species_guess;
+        }
+        else {
+            return this.langControl.translate('Unnamed');
+        }
+    }
+
+    /**
+     * Creates and populates the pagination controls based on the total pages and results.
+     * @param {number} totalPages - The total number of pages.
+     * @param {number} totalResults - The total number of results.
+     * @private
+     */
+    _createPagination(totalPages, totalResults) {
+        const perPageOptionsMarkup = this._generatePerPageOptionsMarkup();
+        const paginationMarkup = this._generatePaginationMarkup(totalPages, totalResults, perPageOptionsMarkup);
+
+        this.populatePaginationContainer(paginationMarkup);
+        this._attachPaginationEventListeners(totalPages);
+    }
+
+    /**
+     * Generates the per page options markup for the dropdown.
+     * @returns {string} - The generated markup for per page options.
+     * @private
+     */
+    _generatePerPageOptionsMarkup() {
+        return this.config.per_page_options.map(per_pageOption => `
+            <li>
+                <a class="per-page dropdown-item ${this.per_page === per_pageOption ? 'active' : ''}" href="#">
+                    ${per_pageOption}
+                </a>
+            </li>
+        `)
+        .join('');
+    }
+
+    /**
+     * Generates the full pagination markup using the provided data.
+     * @param {number} totalPages - The total number of pages.
+     * @param {number} totalResults - The total number of results.
+     * @param {string} perPageOptionsMarkup - The markup for per page options.
+     * @returns {string} - The generated pagination markup.
+     * @private
+     */
+    _generatePaginationMarkup(totalPages, totalResults, perPageOptionsMarkup) {
+        return `
+            <div class="text-center">
+                ${this.langControl.translate('Showing')}
+                <div class="btn-group dropup">
+                    <button type="button" class="btn btn-light btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                        ${this.per_page * this.page}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">${this.langControl.translate('Records per page')}</h6></li>
+                        ${perPageOptionsMarkup}
+                    </ul>
+                </div>
+                ${this.langControl.translate('of')} ${totalResults} ${this.langControl.translate('records')}
+            </div>
+            <div class="d-flex justify-content-center mt-2">
+                <ul class="pagination">
+                    <li class="page-item ${this.page === 1 ? 'disabled' : ''}">
+                        <a id="previousPage" class="page-link" href="#">&laquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <input id="goToPage" class="form-control text-center" type="number" value="${this.page}" min="1" max="${totalPages}">
+                    </li>
+                    <li class="page-item ${this.page === totalPages ? 'disabled' : ''}">
+                        <a id="nextPage" class="page-link" href="#">&raquo;</a>
+                    </li>
+                </ul>
+            </div>
+        `;
+    }
+
+    /**
+     * Populates the pagination container with the provided markup.
+     * @param {string} paginationMarkup - The generated pagination markup.
+     */
+    populatePaginationContainer(paginationMarkup) {
+        this.container.querySelector('#searchPagination').innerHTML = paginationMarkup;
+    }
+
+    /**
+     * Attaches event listeners to the pagination controls.
+     * @param {number} totalPages - The total number of pages.
+     * @private
+     */
+    _attachPaginationEventListeners(totalPages) {
+        const per_pageActions = this.container.querySelectorAll('.per-page');
+        per_pageActions.forEach(per_pageAction => {
+            per_pageAction.addEventListener('click', (event) => {
+                this.per_page = parseInt(event.target.innerText);
+                this.search();
+            });
+        });
+
+        this.container.querySelector('#previousPage').addEventListener('click', () => {
+            this._paginate(this.page - 1, totalPages);
         });
         this.container.querySelector('#goToPage').addEventListener('change', (event) => {
-            this.paginate(event.target.value, totalPages);
+            this._paginate(parseInt(event.target.value, 10), totalPages);
         });
-        this.container.querySelector('#nextPage').addEventListener('click', (event) => {
-            this.paginate(this.page + 1, totalPages);
+        this.container.querySelector('#nextPage').addEventListener('click', () => {
+            this._paginate(this.page + 1, totalPages);
         });
     }
 
-    paginate(pageNumber, totalPages) {
+    /**
+     * Navigates to a specific page and triggers a new search based on the provided page number.
+     * The function ensures that the page number is within valid range.
+     *
+     * @param {number} pageNumber - The page number to navigate to.
+     * @param {number} totalPages - The total number of available pages.
+     * @private
+     */
+    _paginate(pageNumber, totalPages) {
         if (pageNumber >= 1 && pageNumber <= totalPages) {
             this.page = pageNumber;
-            
             this.search();
         }
     }
 
-    setNoResultsFound() {
+    _setNoResultsFound() {
+        this.populatePaginationContainer('');
+        
         this.container.querySelector('#searchItems').innerHTML = `<div class="p-3">
             <p>${this.langControl.translate('No results found')}.</p>
             <p>${this.langControl.translate('Please try again with other filters')}.</p>
         </div>`;
-    
-        this.clearPagination();
     }
 
-    clearPagination() {
-        this.container.querySelector('#searchPagination').innerHTML = '';
+    resetSearchPage() {
+        this.page = 1;
     }
 
-    showSearchLoader() {
-        document.querySelector('#searchItems').innerHTML = `
+    _showSearchLoader() {
+        this.container.querySelector('#searchItems').innerHTML = `
             <div class="p-3 text-center">
                 <p>${this.langControl.translate('Loading...')}.</p>
             </div>
         `;
     }
 
-    onSearchInputChange() {
-        this.page = 1;
-    }
-
-    onSearchSubmit(event) {
+    _onSearchSubmit(event) {
         event.preventDefault();
     
         this.search();

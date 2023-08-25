@@ -1,17 +1,26 @@
+/**
+ * DrawControl class: Manages the drawing controls for a map.
+ * This class interfaces with the Leaflet draw library to provide
+ * drawing capabilities and customization of drawing prompts based
+ * on the selected language.
+ */
 export default class DrawControl {
+    /**
+     * Constructor: Initializes the DrawControl instance.
+     * @param {Object} app - The main application instance containing configurations, map, controls, etc.
+     */
     constructor(app) {
         this.app = app;
-        this.config = app.config;
         this.map = app.map;
         this.langControl = app.controls.langControl;
         this.drawLayer = app.layers.draw;
     }
 
     /**
-     * Creates a custom control and adds it to the map.
+     * Creates and adds a custom drawing control to the map.
      */
     createControl() {
-        this.setControlLocal();
+        this._setControlLocale();
 
         new L.Control.Draw({
             position: 'topleft',
@@ -28,29 +37,67 @@ export default class DrawControl {
         .addTo(this.map);
     }
 
-    setControlLocal() {
-        L.drawLocal.draw.handlers.circle.radius = this.langControl.translate('Radius');
-        L.drawLocal.draw.handlers.circle.tooltip.start = this.langControl.translate('Click and drag to draw circle');
-        L.drawLocal.draw.handlers.polygon.tooltip.cont = this.langControl.translate('Click to continue drawing shape');
-        L.drawLocal.draw.handlers.polygon.tooltip.end = this.langControl.translate('Click first point to close this shape');
-        L.drawLocal.draw.handlers.polygon.tooltip.start = this.langControl.translate('Click to start drawing shape');
-        L.drawLocal.draw.handlers.rectangle.tooltip.start = this.langControl.translate('Click and drag to draw rectangle');
-        L.drawLocal.draw.handlers.simpleshape.tooltip.end = this.langControl.translate('Release to finish drawing');
-        L.drawLocal.draw.toolbar.actions.text = this.langControl.translate('Cancel');
-        L.drawLocal.draw.toolbar.actions.title = this.langControl.translate('Cancel drawing');
-        L.drawLocal.draw.toolbar.buttons.polygon = this.langControl.translate('Draw a polygon');
-        L.drawLocal.draw.toolbar.buttons.rectangle = this.langControl.translate('Draw a rectangle');
-        L.drawLocal.draw.toolbar.buttons.circle = this.langControl.translate('Draw a circle');
-        L.drawLocal.draw.toolbar.finish.text = this.langControl.translate('Finish');
-        L.drawLocal.draw.toolbar.finish.title = this.langControl.translate('Finish drawing');
-        L.drawLocal.draw.toolbar.undo.text = this.langControl.translate('Delete last point');
-        L.drawLocal.draw.toolbar.undo.title = this.langControl.translate('Delete last point drawn');
-        L.drawLocal.edit.handlers.remove.tooltip.text = this.langControl.translate('Click on a feature to remove');
-        L.drawLocal.edit.toolbar.actions.cancel.text = this.langControl.translate('Cancel');
-        L.drawLocal.edit.toolbar.actions.cancel.title = this.langControl.translate('Cancel editing, discards all changes');
-        L.drawLocal.edit.toolbar.actions.clearAll.text = this.langControl.translate('Clear All');
-        L.drawLocal.edit.toolbar.actions.clearAll.title = this.langControl.translate('Clear all layers');
-        L.drawLocal.edit.toolbar.buttons.removeDisabled = this.langControl.translate('No layers to delete');
-        L.drawLocal.edit.toolbar.buttons.remove = this.langControl.translate('Delete layers');
+    /**
+     * Updates the default texts in the drawing library based on the current language.
+     * Uses the language control to translate default prompts and messages.
+     * @private
+     */
+    _setControlLocale() {
+        const local = L.drawLocal;
+
+        // Circle configurations
+        local.draw.handlers.circle.radius = this.langControl.translate('Radius');
+        local.draw.handlers.circle.tooltip.start = this.langControl.translate('Click and drag to draw circle');
+
+        // Polygon configurations
+        local.draw.handlers.polygon.tooltip = {
+            cont: this.langControl.translate('Click to continue drawing shape'),
+            end: this.langControl.translate('Click first point to close this shape'),
+            start: this.langControl.translate('Click to start drawing shape')
+        };
+
+        // Rectangle configurations
+        local.draw.handlers.rectangle.tooltip.start = this.langControl.translate('Click and drag to draw rectangle');
+        
+        // Simple shape configurations
+        local.draw.handlers.simpleshape.tooltip.end = this.langControl.translate('Release to finish drawing');
+
+        // Toolbar button configurations
+        local.draw.toolbar.buttons = {
+            polygon: this.langControl.translate('Draw a polygon'),
+            rectangle: this.langControl.translate('Draw a rectangle'),
+            circle: this.langControl.translate('Draw a circle')
+        };
+
+        // Toolbar action configurations
+        Object.assign(local.draw.toolbar.actions, {
+            text: this.langControl.translate('Cancel'),
+            title: this.langControl.translate('Cancel drawing'),
+            finish: {
+                text: this.langControl.translate('Finish'),
+                title: this.langControl.translate('Finish drawing')
+            },
+            undo: {
+                text: this.langControl.translate('Delete last point'),
+                title: this.langControl.translate('Delete last point drawn')
+            }
+        });
+
+        // Edit toolbar configurations
+        Object.assign(local.edit.toolbar.actions, {
+            cancel: {
+                text: this.langControl.translate('Cancel'),
+                title: this.langControl.translate('Cancel editing, discards all changes')
+            },
+            clearAll: {
+                text: this.langControl.translate('Clear All'),
+                title: this.langControl.translate('Clear all layers')
+            },
+            removeDisabled: this.langControl.translate('No layers to delete'),
+            remove: this.langControl.translate('Delete layers')
+        });
+
+        // Edit handler configurations
+        local.edit.handlers.remove.tooltip.text = this.langControl.translate('Click on a feature to remove');
     }
 }

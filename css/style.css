@@ -46,6 +46,10 @@ a[title="Save changes"] {
     max-height: 100px;
 }
 
+.thumbnail-container {
+    width: 5rem;
+}
+
 /* Medium devices (tablets, 768px and down) */
 @media (max-width: 768px) {
     .leaflet-bottom.leaflet-left {

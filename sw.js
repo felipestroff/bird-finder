@@ -1,10 +1,11 @@
 /**
- * Service Worker for the bird-finder application.
+ * Service Worker for the Bird Finder Application.
+ *
+ * Responsibilities:
+ * - Caching of assets for offline usage.
+ * - Improving load performance by serving cached assets.
  * 
- * This Service Worker handles caching of assets to make
- * the application work offline and improve load performance.
- * 
- * Last Modified: 08/24/2023
+ * Last Modified: 08/25/2023
  * 
  * @see https://willianjusten.com.br/como-fazer-seu-site-funcionar-offline-com-pwa
  */
@@ -23,7 +24,8 @@ const coreResources = [
 
 // JavaScript Resources: Application logic.
 const jsResources = [
-  './js/utils/controlUtils.js',
+  './js/utils/urlUtils.js',
+  './js/utils/mapUtils.js',
   './js/controls/langControl.js',
   './js/controls/helpControl.js',
   './js/controls/locationControl.js',
@@ -99,37 +101,47 @@ const LOG_FAILED_CACHE_RESOURCE = `${LOG_PREFIX} Failed to cache resource.`;
 const LOG_FAILED_DELETE_OLD_CACHES = `${LOG_PREFIX} Failed to delete old caches.`;
 const LOG_FAILED_FETCH_CACHE = `${LOG_PREFIX} Error fetching from cache.`;
 
+self.addEventListener('install', handleInstall);
+self.addEventListener('activate', handleActivate);
+self.addEventListener('fetch', handleFetch);
+
 /**
- * Event Listener: Installation
- * Cache necessary resources during Service Worker installation.
+ * Handles the service worker installation event.
+ * Caches essential resources.
+ *
+ * @param {Event} event - Install event
  */
-self.addEventListener('install', (event) => {
+function handleInstall(event) {
   console.log(LOG_INSTALL);
   self.skipWaiting();
   event.waitUntil(cacheFiles());
-});
+}
 
 /**
- * Event Listener: Activation
- * Cleanup old caches on Service Worker activation.
+ * Handles the service worker activation event.
+ * Removes old cached resources.
+ *
+ * @param {Event} event - Activate event
  */
-self.addEventListener('activate', (event) => {
+function handleActivate(event) {
   console.log(LOG_ACTIVATE);
   event.waitUntil(cleanupOldCaches());
-});
+}
 
 /**
- * Event Listener: Fetch
- * Intercept network requests and serve them from cache if available.
+ * Handles the fetch event by serving requests from cache or network.
+ *
+ * @param {Event} event - Fetch event
  */
-self.addEventListener('fetch', (event) => {
+function handleFetch(event) {
   console.log(`${LOG_FETCH} ${event.request.url}`);
   event.respondWith(fetchFromCacheOrNetwork(event.request));
-});
+}
 
 /**
- * Cache Files: Function to cache the defined resources.
- * @returns {Promise}
+ * Caches the predefined resources.
+ *
+ * @returns {Promise} A promise representing the completion of caching.
  */
 async function cacheFiles() {
   try {
@@ -146,8 +158,9 @@ async function cacheFiles() {
 }
 
 /**
- * Cleanup Old Caches: Function to remove outdated caches.
- * @returns {Promise}
+ * Removes outdated caches to free up space.
+ *
+ * @returns {Promise} A promise representing the cleanup process.
  */
 async function cleanupOldCaches() {
   try {
@@ -162,10 +175,10 @@ async function cleanupOldCaches() {
 }
 
 /**
- * Fetch from Cache or Network: 
- * Function to first try fetching a resource from cache, and if unavailable, fetch from the network.
+ * Attempts to fetch a resource from the cache. If not found, fetches from the network.
+ *
  * @param {Request} request - The request object.
- * @returns {Promise}
+ * @returns {Promise<Response>} A promise representing the response object.
  */
 async function fetchFromCacheOrNetwork(request) {
   try {
