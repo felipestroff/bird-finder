@@ -264,7 +264,7 @@ export default class App {
         const itemImg = document.createElement('img');
         itemImg.src = photoUrl;
         itemImg.className = 'd-block w-auto mx-auto';
-        itemImg.style.maxHeight = '10rem';
+        itemImg.style.maxHeight = '8rem';
         itemImg.style.cursor = 'zoom-in';
     
         const itemAction = document.createElement('a');
@@ -305,29 +305,16 @@ export default class App {
         cardBody.className = 'card-body';
     
         // Create the card title
-        const cardTitle = document.createElement('h6');
+        const cardTitle = document.createElement('h5');
         cardTitle.className = 'card-title';
         cardTitle.textContent = item.taxon.preferred_common_name;
     
-        const taxonName = document.createElement('small');
-        taxonName.className = 'text-body-secondary';
-        taxonName.textContent = `(${item.taxon.name})`;
+        const cardSubtitle = document.createElement('h6');
+        cardSubtitle.className = 'card-subtitle mb-2 text-body-secondary';
+        cardSubtitle.textContent = `(${item.taxon.name})`;
         cardTitle.appendChild(document.createElement('br'));
-        cardTitle.appendChild(taxonName);
+        cardTitle.appendChild(cardSubtitle);
         cardBody.appendChild(cardTitle);
-    
-        // Description
-        if (item.description) {
-            const popupDescription = document.createElement('div');
-            popupDescription.className = 'popup-description overflow-auto pt-2';
-    
-            const cardSubtitle = document.createElement('h6');
-            cardSubtitle.className = 'card-subtitle mb-2 text-body-secondary';
-            cardSubtitle.textContent = item.description;
-            popupDescription.appendChild(cardSubtitle);
-    
-            cardBody.appendChild(popupDescription);
-        }
     
         // Place
         const cardText = document.createElement('p');
@@ -660,6 +647,8 @@ export default class App {
     }
 
     _onMarkerMouseOver(event) {
+        if (this.mapUtils.isMobile) return;
+
         const tooltips = document.querySelectorAll('.leaflet-tooltip');
         const lastTooltip = tooltips[tooltips.length - 1];
         

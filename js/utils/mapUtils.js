@@ -26,7 +26,6 @@ export default class MapUtils {
      * @param {Event} event - The event triggering the method.
      */
     onControlOver(event) {
-        if (!this.isMobile) return;
         this._setMapInteractions(false);
     }
     
@@ -37,7 +36,6 @@ export default class MapUtils {
      * @param {Event} event - The event triggering the method.
      */
     onControlOut(event) {
-        if (!this.isMobile) return;
         this._setMapInteractions(true);
     }
 
