@@ -80,10 +80,10 @@ export default class App {
     _createBaseLayers() {
         return {
             'OSM': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
             }),
             'Satellite': L.tileLayer(`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}@2x?access_token=${this.config.app.mapBox_token}`, {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/" target="_blank">Mapbox</a>',
                 id: 'mapbox/satellite-v9',
                 tileSize: 512,
                 zoomOffset: -1
@@ -466,6 +466,8 @@ export default class App {
         this._initDrawControl();
         this._initLayersControl();
         this._initSearchControl();
+
+        this._setMapAttribution();
     }
 
     /**
@@ -522,6 +524,26 @@ export default class App {
     _initSearchControl() {
         this.controls.searchControl = new SearchControl(this);
         this.controls.searchControl.createControl();
+    }
+
+    _setMapAttribution() {
+        const linkedIn_locale = this.controls.langControl.lang.replace('-', '_');
+
+        this.map.attributionControl.setPrefix(`
+            <a href="https://leafletjs.com" target="_blank" title="A JavaScript library for interactive maps">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag">
+                    <path fill="#4C7BE1" d="M0 0h12v4H0z"></path>
+                    <path fill="#FFD500" d="M0 4h12v3H0z"></path>
+                    <path fill="#E0BC00" d="M0 7h12v1H0z"></path>
+                </svg>
+                Leaflet
+            </a>
+            |
+            <a href="https://api.inaturalist.org/v1/docs" target="_blank" class="ms-1">iNaturalist API</a>
+            |
+            ${this.controls.langControl.translate('Developed by')}
+            <a href="https://www.linkedin.com/in/felipestroff/?locale=${linkedIn_locale}" target="_blank">Felipe Stroff</a>
+        `);
     }
 
     /**

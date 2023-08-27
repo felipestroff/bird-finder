@@ -118,9 +118,6 @@ export default class SearchControl {
                     </div>
                 </div>
                 <div id="searchPagination" class="d-row justify-content-center align-items-center mt-3"></div>
-                <div class="d-flex justify-content-center align-items-center form-text">
-                    Powered by <a href="https://api.inaturalist.org/v1/docs" target="_blank" class="ms-1">iNaturalist API</a>
-                </div>
             </div>
         `;
     }
@@ -253,7 +250,7 @@ export default class SearchControl {
 
         const params = {...this.config.params};
         params.page = this.page;
-        params.locale = this.langControl.lang;
+        params.locale = this.langControl.lang.replace('_', '-');
 
         if (term) {
             params.q = term;
