@@ -316,10 +316,13 @@ export default class App {
         cardTitle.appendChild(cardSubtitle);
         cardBody.appendChild(cardTitle);
     
-        // Place
+        // Place and date
+        const isoDate = new Date(item.created_at);
+        const localDate = new Intl.DateTimeFormat(this.controls.langControl.lang, { dateStyle: 'full', timeStyle: 'long' }).format(isoDate).replace(/-\d{2}:\d{2}$/, '');
+
         const cardText = document.createElement('p');
         cardText.className = 'card-text';
-        cardText.textContent = item.place_guess;
+        cardText.textContent = `${item.place_guess}, ${localDate}`;
         cardBody.appendChild(cardText);
     
         // User details
