@@ -80,4 +80,4 @@ Holds the languages available for the application, excluding the default languag
 
 ## Contact
 
-For support or any additional questions, reach out to us at [email](mailto:stroff.felipe@gmail.com).
+If you have any questions, found a bug, or wish to contribute to the project, feel free to reach out to me at [email](mailto:stroff.felipe@gmail.com).
