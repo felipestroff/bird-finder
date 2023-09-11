@@ -1,6 +1,6 @@
 # Bird Finder - GIS Application for Bird Species Identification
 
-A GIS progressive web application (PWA) designed to explore the capabilities of the iNaturalist API. The goal is to provide users with the freedom to identify bird species in their region using various filters, including geometric ones.
+A GIS progressive web application (PWA) designed to explore the capabilities of the [iNaturalist API](https://api.inaturalist.org/v1/docs). The goal is to provide users with the freedom to identify bird species in their region using various filters, including geometric ones.
 
 This tool is crafted for birdwatching enthusiasts, ornithologists, and nature lovers. The main purpose of the application is to facilitate quick and precise identification of bird species leveraging a range of information, such as locations, scientific and common names, and areas of interest.
 
