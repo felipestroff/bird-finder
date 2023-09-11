@@ -1,6 +1,6 @@
 {
     "app": {
-        "defaultLang": "pt-BR",
+        "defaultLang": "en-US",
         "mapBox_token": "pk.eyJ1IjoiZnN0cm9mZiIsImEiOiJjbGQyN2Uzc3kwMHVnM3BwMHA0MHZndm95In0.A9b4v-gS_jWQT0cADitQ9A"
     },
     "map": {
