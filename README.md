@@ -1,10 +1,10 @@
-# Bird Finder - Aplicativo GIS para Identificação de Espécies de Aves
+# Bird Finder - GIS Application for Bird Species Identification
 
-Aplicativo (PWA) GIS com intuito de explorar as possibilidades do iNaturalist API. A ideia é dar mais liberdade ao usuário para identificar espécies de aves em sua região a partir de diversos filtros, incluindo geométricos.
+A GIS progressive web application (PWA) leveraging the iNaturalist API to offer users greater flexibility in identifying bird species in their regions through the use of various filters, including geometric ones.
 
-Ferramenta desenvolvida para entusiastas da observação de aves (Birdwatching), ornitólogos e amantes da natureza. O objetivo principal do aplicativo é possibilitar a identificação rápida e precisa de espécies de aves com base em diversas informações, como localidades, nomes científicos e populares e áreas de interesse.
+Designed for birdwatching enthusiasts, ornithologists, and nature lovers, the primary goal of this application is to facilitate quick and accurate bird species identification using diverse data such as locations, scientific and popular names, and specific areas of interest.
 
-## Tecnologias
+## Technologies
 
 - JavaScript
 - HTML5
@@ -12,62 +12,62 @@ Ferramenta desenvolvida para entusiastas da observação de aves (Birdwatching),
 - [https://leafletjs.com] Leaflet
 - [https://leaflet.github.io/Leaflet.draw/docs/leaflet-draw-latest.html] Leaflet Draw
 - [https://github.com/Leaflet/Leaflet.markercluster] Leaflet.markercluster
-- [https://getbootstrap.com] Boostrap
+- [https://getbootstrap.com] Bootstrap
 
-## Instalação
+## Installation
 
-Para instalar e configurar o WebGIS, siga os passos abaixo:
+To install and configure WebGIS, follow the steps below:
 
-1. Clone o repositório para sua máquina local.
-2. **Usando um servidor local (como XAMPP, WampServer, IIS):**
-   - Copie a pasta do projeto para o diretório de projetos do seu servidor (por exemplo, `htdocs` para XAMPP).
-   - Inicie o servidor e acesse o projeto através do navegador usando a URL correspondente (por exemplo, `http://localhost/bird-finder`).
-3. **Usando o plugin Live Server do Visual Studio Code:**
-   - Abra o projeto no Visual Studio Code.
-   - Instale o plugin "Live Server" se ainda não o tiver.
-   - Clique com o botão direito no arquivo `index.html` e selecione "Open with Live Server". Isso iniciará um servidor local e abrirá o projeto em seu navegador padrão.
-4. **Realizando deploy pelo Heroku:**
-    - [https://www.heroku.com] Realize login da sua conta no heroku.
-    - Clique no botão `New` e depois no item `Create new app`.
-    - De um nome para o app no campo `App name`.
-    - Clique no botão `Create app`.
-    - Com a aplicação criada, clique na aba `Deploy`.
-    - Em `Deployment method` selecione `GitHub`.
-    - Em `App connected to GitHub` conecte com sua conta no GitHub.
-    - Após conectar e dar as devidas permissões, pesquise o repositório da aplicação no GitHub e clique em `Conectar`.
-    - Para habilitar deploys automaticos, vá em `Automatic deploys` e habilite o deploy na branch desejada.
-    - Faça o primeiro deploy da aplicação em `Manual deploy`, selecionando a branch e depois clicando no botão `Deploy Branch`.
+1. Clone the repository to your local machine.
+2. **Using a local server (such as XAMPP, WampServer, IIS):**
+   - Copy the project folder to your server's project directory (e.g. `htdocs` for XAMPP).
+   - Start the server and access the project through the browser using the corresponding URL (e.g. `http://localhost/bird-finder`).
+3. **Using the Visual Studio Code Live Server plugin:**
+   - Open the project in Visual Studio Code.
+   - Install the "Live Server" plugin if you don't already have it.
+   - Right click on the `index.html` file and select "Open with Live Server". This will start a local server and open the project in your default browser.
+4. **Performing deployment via Heroku:**
+   - [https://www.heroku.com] Log in to your Heroku account.
+   - Click on the `New` button and then on the `Create new app` item.
+   - Give the app a name in the `App name` field.
+   - Click on the `Create app` button.
+   - With the application created, click on the `Deploy` tab.
+   - In `Deployment method` select `GitHub`.
+   - In `App connected to GitHub` connect with your GitHub account.
+   - After connecting and giving the necessary permissions, search for the application repository on GitHub and click `Connect`.
+   - To enable automatic deployments, go to `Automatic deploys` and enable deployment on the desired branch.
+   - Make the first deployment of the application in `Manual deploy`, selecting the branch and then clicking on the `Deploy Branch` button.
 
-## Estrutura de Diretórios
+## Directory Structure
 
 ### assets
 
-Aqui estão armazenados todos os recursos estáticos, como imagens, ícones e fontes utilizadas no projeto.
+This directory stores all static resources such as images, icons, and fonts utilized in the project.
 
 ### config
 
-Contém arquivos de configuração do projeto.
+This section contains the project configuration files.
 
 ### css
 
-Aqui estão os arquivos de estilos do projeto, organizados de acordo com a metodologia BEM ou outra de sua escolha.
+Here, you'll find the project style files organized following the BEM methodology or another methodology of your choice.
 
 ### js
 
-Contém todos os scripts JavaScript do projeto e lógica de negócio (core).
+This directory houses all the JavaScript scripts and the core business logic of the project.
 
 #### main.js
 
-Ponto de entrada da aplicação. Inicializa o app e carrega configurações, parametros e módulos necessários, também armazena métodos não-GIS.
+Serves as the application entry point. It initializes the app, loads the necessary configurations, parameters, and modules, and accommodates non-GIS methods.
 
 #### app.js
 
-Contém a lógica principal da aplicação e interface de mapa.
+This file embodies the main application logic and map interface.
 
 ### libs
 
-Aqui estão as bibliotecas e frameworks de terceiros utilizados no projeto.
+This folder contains third-party libraries and frameworks employed in the project.
 
 ### locales
 
-Contém as linguagens disponíveis para o aplicativo, excluindo a linguagem padrão en-US.
+Here, we have the languages available for the application, excluding the default en-US language.
