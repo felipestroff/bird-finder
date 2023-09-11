@@ -1,7 +1,7 @@
 {
     "name": "Bird Finder",
     "short_name": "Bird Finder",
-    "description": "Aplicativo de identificação de espécies de aves",
+    "description": "GIS Application for Bird Species Identification",
     "theme_color": "#B7E263",
     "background_color": "#FFFFFF",
     "display": "standalone",
