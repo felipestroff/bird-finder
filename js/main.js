@@ -34,21 +34,28 @@ function registerServiceWorker() {
     });
 }
 
+function handleBeforeInstallPrompt(event) {
+    event.preventDefault();
+    console.log(`${APP_LOG_PREFIX} before install:`, event);
+    window.deferredPrompt = event;
+}
+
+function handleAppInstalled(event) {
+    console.log(`${APP_LOG_PREFIX} installed:`, event);
+    window.deferredPrompt = null;
+}
+
 /**
  * Listens for application installation events and logs relevant information.
  */
 function handleAppInstallEvents() {
-    window.addEventListener('beforeinstallprompt', (event) => {
-        event.preventDefault();
-        console.log(`${APP_LOG_PREFIX} before install:`, event);
-        window.deferredPrompt = event;
-    });
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
-    window.addEventListener('appinstalled', (event) => {
-        console.log(`${APP_LOG_PREFIX} installed:`, event);
-        window.deferredPrompt = null;
-    });
+    checkIfAppIsStandalone();
+}
 
+function checkIfAppIsStandalone() {
     if (!('matchMedia' in window)) {
         console.log(`${APP_LOG_PREFIX} Your browser does not support the matchMedia API.`);
         return;
@@ -66,11 +73,14 @@ function handleAppInstallEvents() {
  * @returns {Object} - Parsed configuration object.
  */
 async function fetchConfig() {
-    const response = await fetch('./config/config.json');
-    if (!response.ok) {
-        throw new Error('Failed to fetch configuration.');
+    try {
+        const response = await fetch('./config/config.json');
+        if (!response.ok) throw new Error('Failed to fetch configuration.');
+        return response.json();
     }
-    return response.json();
+    catch (error) {
+        throw new Error('Error fetching configuration:', error);
+    }
 }
 
 /**
