@@ -4,54 +4,57 @@
 @import url('../libs/leaflet-markercluster/MarkerCluster.css');
 @import url('../libs/leaflet-markercluster/MarkerCluster.Default.css');
 
+:root {
+    --main-width: 100vw;
+    --control-content-width: 25vw;
+    --loader-size: 3rem;
+    --thumbnail-size: 5rem;
+    --popup-description-max-height: 100px;
+    --medium-device-width: 768px;
+}
+
 body {
-    padding: 0;
     margin: 0;
+    padding: 0;
 }
 
 html, body, #app, #map {
+    width: var(--main-width);
     height: 100%;
-    width: 100vw;
     overflow: hidden;
 }
 
-.leaflet-touch .leaflet-control-layers,
-.leaflet-touch .leaflet-bar {
+.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
     border: 1px solid #adb5bd;
 }
 
 .loader {
-    width: 3rem;
-    height: 3rem;
     position: absolute;
-    left: calc(50% - (3rem / 2));
-    top: calc(50% - 3rem);
     z-index: 1056;
+    top: calc(50% - var(--loader-size));
+    left: calc(50% - (var(--loader-size) / 2));
+    width: var(--loader-size);
+    height: var(--loader-size);
 }
 
 .control:has(.show) {
     background-color: white;
 }
 
-a[title="Save changes"] {
-    display: none;
-}
-
 .control-content {
-    width: 25vw;
+    width: var(--control-content-width);
     height: auto;
 }
 
 .popup-description {
-    max-height: 100px;
+    max-height: var(--popup-description-max-height);
 }
 
 .thumbnail-container {
-    width: 5rem;
+    width: var(--thumbnail-size);
 }
 
-/* Medium devices (tablets, 768px and down) */
-@media (max-width: 768px) {
+@media (max-width: var(--medium-device-width)) {
     .leaflet-bottom.leaflet-left {
         margin-bottom: 35px;
     }
