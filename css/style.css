@@ -10,7 +10,6 @@
     --loader-size: 3rem;
     --thumbnail-size: 5rem;
     --popup-description-max-height: 100px;
-    --medium-device-width: 768px;
 }
 
 body {
@@ -54,7 +53,7 @@ html, body, #app, #map {
     width: var(--thumbnail-size);
 }
 
-@media (max-width: var(--medium-device-width)) {
+@media (max-width: 768px) {
     .leaflet-bottom.leaflet-left {
         margin-bottom: 35px;
     }

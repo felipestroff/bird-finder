@@ -88,7 +88,7 @@ export default class SearchControl {
                     <img src="assets/binoculars.png" alt="Pesquisar" width="32" height="32">
                 </button>
             </div>
-            <div id="searchContent" class="control-content collapse show collapse-horizontal bg-white rounded">
+            <div id="searchContent" class="control-content collapse collapse-horizontal bg-white rounded">
                 <div class="position-absolute d-grid gap-2 d-flex justify-content-start" style="left: 10px; top: 10px;">
                     <button id="setDefaultExtentBtn" class="btn btn-light btn-sm border-dark-subtle" type="button" title="${this.langControl.translate('Default view')}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-globe-americas" viewBox="0 0 16 16">

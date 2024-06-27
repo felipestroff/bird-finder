@@ -1,0 +1,6 @@
+.gradle
+node_modules
+app/build
+.vscode
+android.keystore
+local.properties
