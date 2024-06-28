@@ -12,7 +12,7 @@
 
 // Cache Versioning
 const CACHE_PREFIX = 'bird-finder';
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v1.3';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const RESOURCES = {

@@ -56,8 +56,8 @@ android {
         applicationId "com.herokuapp.bird_finder.twa"
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 2
-        versionName "1.1"
+        versionCode 4
+        versionName "1.3"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -156,17 +156,6 @@ android {
     }
     lintOptions {
         checkReleaseBuilds false
-    }
-    bundle {
-        abi {
-            enableSplit = true
-        }
-        density {
-            enableSplit = true
-        }
-        language {
-            enableSplit = true
-        }
     }
 }
 
